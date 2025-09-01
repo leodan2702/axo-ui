@@ -72,6 +72,20 @@
             value="myFunctions"
             @click="navigateTo('/functions')"
           ></v-list-item>
+          <v-list-item
+            link
+            prepend-icon="mdi-grid"
+            title="Roles"
+            value="Roles"
+            @click="navigateTo('/roles')"
+          ></v-list-item>
+          <v-list-item
+            link
+            prepend-icon="mdi-grid"
+            title="SecurityPolicy"
+            value="SecurityPolicy"
+            @click="navigateTo('/security_policy')"
+          ></v-list-item>
           <v-spacer></v-spacer>
           <v-list-item
             prepend-icon="mdi-logout"
