@@ -4,6 +4,7 @@ import router from './router';
 import { createPinia } from 'pinia';
 import { loadFonts } from './plugins/webfontloader';
 import vuetify from './plugins/vuetify'; 
+// Vue Flow styles
 
 loadFonts();
 

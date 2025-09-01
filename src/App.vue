@@ -88,6 +88,13 @@
           ></v-list-item>
           <v-spacer></v-spacer>
           <v-list-item
+            prepend-icon="mdi-graph"
+            title="Design"
+            value="design"
+            @click="navigateTo('/design')"
+          ></v-list-item>
+          <v-spacer></v-spacer>
+          <v-list-item
             prepend-icon="mdi-logout"
             title="Log Out"
             value="logout"
@@ -99,7 +106,9 @@
 
     <!-- Main Content -->
     <v-main>
-      <RouterView />
+      <RouterView v-slot="{ Component, route }">
+          <component :is="Component" :key="route.fullPath" />
+      </RouterView>
     </v-main>
 
     <!-- Footer -->

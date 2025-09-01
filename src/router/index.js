@@ -16,6 +16,7 @@ import CreateSecurityPolicy from '@/views/CreateSecurityPolicy.vue'
 
 
 import { createRouter, createWebHistory } from 'vue-router'
+import DesignGraph from '@/views/DesignGraph.vue'
 
 const routes = [
   {
@@ -93,6 +94,11 @@ const routes = [
     path: '/create-security-policy',
     name: 'CreateSecurityPolicy',
     component: CreateSecurityPolicy
+  },
+  {
+    path: '/design',
+    name: 'DesignGraph',
+    component: DesignGraph
   }
   
   
