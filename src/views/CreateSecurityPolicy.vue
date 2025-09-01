@@ -8,29 +8,13 @@
       <div class="d-flex flex-column">
         <div class="d-flex align-center">
           <h1>Create Security Policy</h1>
-          <v-spacer></v-spacer>
-          <!-- boton persistence -->
-          <button class="btn-persistence">
-            Persistence
-          </button>
-          <!-- boton run -->
-          <button class="btn-run">
-            Run
-          </button>         
         </div>
         <v-divider></v-divider>
         <div class="pa-5">
           <v-row no-gutters>
             <v-col cols="5">
               <v-sheet class="mt-5">
-                <!-- formulario de Security Policy -->
                 <FormCreateSecurityPolicy />
-              </v-sheet>
-            </v-col>
-            <v-col cols="7">
-              <v-sheet class="mt-5">
-                <!-- Code Area -->
-                <CodeArea />
               </v-sheet>
             </v-col>
           </v-row>
