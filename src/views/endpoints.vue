@@ -22,6 +22,10 @@
         <div class="mt-5 pa-5">
           <CardVariant
             v-for="(ep, index) in filteredEndpoints"
+            :key="index"
+            :title="`Endpoint: ${ep.name}`"
+            :description="`Microservice: ${ep.microservice_id} | Deployment: ${ep.deployment_status}`"
+            :autor="ep.created_at"
           >
             <template #button>
               <button
