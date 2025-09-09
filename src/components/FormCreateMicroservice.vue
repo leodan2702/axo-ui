@@ -1,7 +1,7 @@
 <template>
   <v-card class="d-flex flex-column pa-6 elevation-5 rounded-lg" style="width: 100%; max-width: 600px;">
     <!-- Título y subtítulo -->
-    <v-card-title>{{ isEditing ? 'Edit Endpoint' : 'Create a New Endpoint' }}</v-card-title>
+    <v-card-title>{{ isEditing ? 'Edit Microservice' : 'Create a New Microservice' }}</v-card-title>
     <v-card-subtitle class="mb-4">Fill in the fields below</v-card-subtitle>
 
     <!-- Formulario -->
@@ -12,31 +12,34 @@
       @submit.prevent="save"
       :lazy-validation="true"
     >
-      <!-- Nombre del endpoint -->
+      <!-- Nombre del microservice -->
       <v-text-field
-        v-model="endpointsStore.form.name"
-        label="Endpoint Name"
+        v-model="microservicesStore.form.name"
+        label="Microservice Name"
         variant="filled"
         :rules="[rules.required]"
         required
-        prepend-inner-icon="mdi-api"
+        prepend-inner-icon="mdi-server"
       />
 
-      <!-- Imagen --> 
-      <v-text-field
-        v-model="endpointsStore.form.image"
-        label="Image"
+      <!-- Selección de servicio -->
+      <v-select
+        v-model="selectedServiceId"
+        :items="availableServices"
+        item-title="name"
+        item-value="service_id"
+        label="Service"
         variant="filled"
         :rules="[rules.required]"
         required
-        prepend-inner-icon="mdi-image"
+        prepend-inner-icon="mdi-cog"
       />
 
       <!-- Recursos -->
       <v-row>
         <v-col cols="6">
           <v-text-field
-            v-model="endpointsStore.form.resources.cpu"
+            v-model="microservicesStore.form.resources.cpu"
             label="CPU"
             type="number"
             variant="filled"
@@ -47,7 +50,7 @@
         </v-col>
         <v-col cols="6">
           <v-text-field
-            v-model="endpointsStore.form.resources.ram"
+            v-model="microservicesStore.form.resources.ram"
             label="RAM (e.g. 1GB)"
             variant="filled"
             :rules="[rules.required]"
@@ -57,23 +60,23 @@
         </v-col>
       </v-row>
 
-      <!-- Security Policy (sp_id) -->
+      <!-- Funciones asociadas -->
       <v-select
-        v-model="selectedSpId"
-        :items="availablePolicies"
+        v-model="selectedFunctions"
+        :items="availableFunctions"
         item-title="name"
-        item-value="sp_id"
-        label="Security Policy"
+        item-value="function_id"
+        label="Functions"
         variant="filled"
-        :rules="[rules.required]"
-        required
-        prepend-inner-icon="mdi-shield-lock"
+        multiple
+        chips
+        prepend-inner-icon="mdi-function"
       />
 
       <!-- Botón Guardar -->
       <div class="d-flex mt-4">
         <v-btn
-          :loading="endpointsStore.loading"
+          :loading="microservicesStore.loading"
           color="#11222eff"
           size="large"
           type="submit"
@@ -108,14 +111,18 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, onBeforeRouteUpdate } from 'vue-router'
-import { useEndpointsStore } from '@/store/endpoints'
-import { useSecurityPoliciesStore } from '@/store/security_policy'
+import { useMicroservicesStore } from '@/store/microservices'
+import { useServicesStore } from '@/store/services'
+import { useFunctionsStore } from '@/store/functions'
 
-const endpointsStore = useEndpointsStore()
-const securityPoliciesStore = useSecurityPoliciesStore()
+const microservicesStore = useMicroservicesStore()
+const servicesStore = useServicesStore()
+const functionsStore = useFunctionsStore()
 
-const selectedSpId = ref('')
-const availablePolicies = ref([])
+const selectedServiceId = ref('')
+const selectedFunctions = ref([])
+const availableServices = ref([])
+const availableFunctions = ref([])
 
 const isValid = ref(false)
 const formRef = ref(null)
@@ -133,24 +140,30 @@ const rules = {
 
 const route = useRoute()
 
-// --- Sincronizar selectedSpId con form.security_policy ---
-watch(selectedSpId, (newSpId) => {
-  endpointsStore.form.security_policy = newSpId
+// --- Sincronizar selectedServiceId y selectedFunctions con form ---
+watch(selectedServiceId, (newId) => {
+  microservicesStore.form.service_id = newId
+})
+
+watch(selectedFunctions, (newFuncs) => {
+  microservicesStore.form.functions = newFuncs
 })
 
 // --- Cargar formulario ---
 const loadForm = (editQuery) => {
   if (editQuery) {
     isEditing.value = true
-    const endpointToEdit = endpointsStore.endpoints.find(e => e.endpoint_id === editQuery)
-    if (endpointToEdit) {
-      endpointsStore.form = { ...endpointToEdit }
-      selectedSpId.value = endpointToEdit.security_policy || ''
+    const msToEdit = microservicesStore.microservices.find(m => m.microservice_id === editQuery)
+    if (msToEdit) {
+      microservicesStore.form = { ...msToEdit }
+      selectedServiceId.value = msToEdit.service_id || ''
+      selectedFunctions.value = msToEdit.functions || []
     }
   } else {
     isEditing.value = false
-    endpointsStore.resetForm()
-    selectedSpId.value = ''
+    microservicesStore.resetForm()
+    selectedServiceId.value = ''
+    selectedFunctions.value = []
     formRef.value.resetValidation()
     isValid.value = false
   }
@@ -158,11 +171,12 @@ const loadForm = (editQuery) => {
 
 // --- Al montar ---
 onMounted(async () => {
-  await securityPoliciesStore.get_policies()
-  availablePolicies.value = securityPoliciesStore.policies.map(p => ({
-    sp_id: p.sp_id,
-    name: p.name ?? p.sp_id
-  }))
+  await servicesStore.get_services()
+  availableServices.value = servicesStore.services.map(s => ({ service_id: s.service_id, name: s.name }))
+
+  await functionsStore.get_functions()
+  availableFunctions.value = functionsStore.functions.map(f => ({ function_id: f.function_id, name: f.name }))
+
   loadForm(route.query.edit)
 })
 
@@ -173,8 +187,9 @@ onBeforeRouteUpdate((to) => {
 
 // --- Al desmontar ---
 onBeforeUnmount(() => {
-  endpointsStore.resetForm()
-  selectedSpId.value = ''
+  microservicesStore.resetForm()
+  selectedServiceId.value = ''
+  selectedFunctions.value = []
   formRef.value.resetValidation()
   isValid.value = false
 })
@@ -183,17 +198,17 @@ onBeforeUnmount(() => {
 const save = async () => {
   let result
   if (isEditing.value) {
-    result = await endpointsStore.update_endpoint(route.query.edit)
+    result = await microservicesStore.update_microservice(route.query.edit)
   } else {
-    result = await endpointsStore.create_endpoint()
+    result = await microservicesStore.create_microservice()
   }
 
   if (result.color === 'success') {
     snackbar.value = {
       show: true,
       text: isEditing.value
-        ? `Endpoint updated successfully: ${result.data.name}`
-        : `Endpoint created successfully: ${result.data.name}`,
+        ? `Microservice updated successfully: ${result.data.name}`
+        : `Microservice created successfully: ${result.data.name}`,
       color: 'success'
     }
 
@@ -201,12 +216,12 @@ const save = async () => {
 
     if (!isEditing.value) {
       isValid.value = false
-      endpointsStore.resetForm()
-      selectedSpId.value = ''
+      microservicesStore.resetForm()
+      selectedServiceId.value = ''
+      selectedFunctions.value = []
     }
   } else {
     snackbar.value = { show: true, text: 'Error: ' + result.message, color: 'error' }
   }
 }
 </script>
-

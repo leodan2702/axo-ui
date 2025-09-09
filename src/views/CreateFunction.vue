@@ -4,21 +4,21 @@
     style="min-height: 300px;"
   >
     <v-container>
-      <div class="d-flex flex-column">
         <div class="d-flex align-center mb-4">
-          <h1>Security Policy</h1>
+          <h1>Functions</h1>
         </div>
+
         <v-divider></v-divider>
 
-        <!-- Formulario de Security Policy -->
+        <!-- Contenedor centrado del formulario -->
         <v-sheet class="mt-5 d-flex justify-center" style="width: 100%;">
-          <FormCreateSecurityPolicy />
+          <FormCreateFunction />
         </v-sheet>
-      </div>
-    </v-container>
+  
+    </v-container>                  
   </v-main>
 </template>
 
 <script setup>
-import FormCreateSecurityPolicy from '@/components/FormCreateSecurityPolicy.vue';
+import FormCreateFunction from '@/components/FormCreateFunction.vue';
 </script>
