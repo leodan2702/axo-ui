@@ -1,44 +1,58 @@
 <template>
-  <v-card class="d-flex flex-column pa-4" max-width="600">
-    <v-form v-model="isValid" fast-fail @submit.prevent="save">
-      
+  <v-card class="d-flex flex-column pa-6 elevation-5 rounded-lg" style="width: 100%; max-width: 600px;">
+    <!-- Título y subtítulo -->
+    <v-card-title>{{ isEditing ? 'Edit Endpoint' : 'Create a New Endpoint' }}</v-card-title>
+    <v-card-subtitle class="mb-4">Fill in the fields below</v-card-subtitle>
+
+    <!-- Formulario -->
+    <v-form
+      ref="formRef"
+      v-model="isValid"
+      fast-fail
+      @submit.prevent="save"
+      :lazy-validation="true"
+    >
       <!-- Nombre del endpoint -->
       <v-text-field
-        v-model="form.name"
+        v-model="endpointsStore.form.name"
         label="Endpoint Name"
         variant="filled"
         :rules="[rules.required]"
         required
+        prepend-inner-icon="mdi-api"
       />
 
-      <!-- Imagen -->
+      <!-- Imagen --> 
       <v-text-field
-        v-model="form.image"
+        v-model="endpointsStore.form.image"
         label="Image"
         variant="filled"
         :rules="[rules.required]"
         required
+        prepend-inner-icon="mdi-image"
       />
 
       <!-- Recursos -->
       <v-row>
         <v-col cols="6">
           <v-text-field
-            v-model="form.resources.cpu"
+            v-model="endpointsStore.form.resources.cpu"
             label="CPU"
             type="number"
             variant="filled"
             :rules="[rules.required]"
             required
+            prepend-inner-icon="mdi-chip"
           />
         </v-col>
         <v-col cols="6">
           <v-text-field
-            v-model="form.resources.ram"
+            v-model="endpointsStore.form.resources.ram"
             label="RAM (e.g. 1GB)"
             variant="filled"
             :rules="[rules.required]"
             required
+            prepend-inner-icon="mdi-memory"
           />
         </v-col>
       </v-row>
@@ -47,115 +61,152 @@
       <v-select
         v-model="selectedSpId"
         :items="availablePolicies"
-        item-title="sp_id"
+        item-title="name"
         item-value="sp_id"
-        label="Security Policy (sp_id)"
+        label="Security Policy"
         variant="filled"
         :rules="[rules.required]"
         required
-        @update:modelValue="onPolicyChange"
-      />
-
-      <!-- Roles (solo lectura) -->
-      <v-text-field
-        v-model="form.security_policy.roles"
-        label="Roles"
-        variant="filled"
-        readonly
-      />
-
-      <!-- Requires Authentication (solo lectura) -->
-      <v-checkbox
-        v-model="form.security_policy.requires_authentication"
-        label="Requires Authentication"
-        :readonly="true"
-        :disabled="true"
+        prepend-inner-icon="mdi-shield-lock"
       />
 
       <!-- Botón Guardar -->
-      <v-btn
-        :loading="loading"
-        color="#11222eff"
-        size="large"
-        type="submit"
-        variant="elevated"
-        block
-        class="mt-4"
-        :disabled="!isValid"
-      >
-        Save
-      </v-btn>
+      <div class="d-flex mt-4">
+        <v-btn
+          :loading="endpointsStore.loading"
+          color="#11222eff"
+          size="large"
+          type="submit"
+          variant="elevated"
+          block
+          :disabled="!isValid"
+        >
+          {{ isEditing ? 'Update' : 'Save' }}
+        </v-btn>
+      </div>
     </v-form>
+
+    <!-- Snackbar -->
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      timeout="3000"
+      location="bottom center"
+    >
+      {{ snackbar.text }}
+      <template #actions>
+        <v-btn color="white" variant="text" @click="snackbar.show = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
+
+    <v-divider class="my-4"></v-divider>
   </v-card>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRoute, onBeforeRouteUpdate } from 'vue-router'
 import { useEndpointsStore } from '@/store/endpoints'
 import { useSecurityPoliciesStore } from '@/store/security_policy'
 
 const endpointsStore = useEndpointsStore()
 const securityPoliciesStore = useSecurityPoliciesStore()
 
-const form = ref({
-  name: '',
-  image: '',
-  resources: { cpu: '', ram: '' },
-  security_policy: { sp_id: '', roles: [], requires_authentication: false }
-})
-
 const selectedSpId = ref('')
 const availablePolicies = ref([])
+
 const isValid = ref(false)
-const loading = ref(false)
-const rules = { required: (v) => !!v || 'Campo requerido' }
+const formRef = ref(null)
+const isEditing = ref(false)
 
-onMounted(async () => {
-  await securityPoliciesStore.get_policies()
-  console.log('Policies from store:', securityPoliciesStore.policies)
-
-  availablePolicies.value = securityPoliciesStore.policies.map(p => ({
-    sp_id: p.sp_id,
-    roles: p.roles,
-    requires_authentication: p.requires_authentication
-  }))
+const snackbar = ref({
+  show: false,
+  text: '',
+  color: 'success'
 })
 
+const rules = {
+  required: v => !!v || 'Field required'
+}
 
-const onPolicyChange = (sp_id) => {
-  const policy = availablePolicies.value.find(p => p.sp_id === sp_id)
-  if (policy) {
-    form.value.security_policy.sp_id = policy.sp_id
-    form.value.security_policy.roles = policy.roles ?? []
-    form.value.security_policy.requires_authentication = policy.requires_authentication ?? false
+const route = useRoute()
+
+// --- Sincronizar selectedSpId con form.security_policy ---
+watch(selectedSpId, (newSpId) => {
+  endpointsStore.form.security_policy = newSpId
+})
+
+// --- Cargar formulario ---
+const loadForm = (editQuery) => {
+  if (editQuery) {
+    isEditing.value = true
+    const endpointToEdit = endpointsStore.endpoints.find(e => e.endpoint_id === editQuery)
+    if (endpointToEdit) {
+      endpointsStore.form = { ...endpointToEdit }
+      selectedSpId.value = endpointToEdit.security_policy || ''
+    }
   } else {
-    form.value.security_policy = { sp_id:'', roles:[], requires_authentication:false }
+    isEditing.value = false
+    endpointsStore.resetForm()
+    selectedSpId.value = ''
+    formRef.value.resetValidation()
+    isValid.value = false
   }
 }
 
+// --- Al montar ---
+onMounted(async () => {
+  await securityPoliciesStore.get_policies()
+  availablePolicies.value = securityPoliciesStore.policies.map(p => ({
+    sp_id: p.sp_id,
+    name: p.name ?? p.sp_id
+  }))
+  loadForm(route.query.edit)
+})
+
+// --- Al cambiar ruta ---
+onBeforeRouteUpdate((to) => {
+  loadForm(to.query.edit)
+})
+
+// --- Al desmontar ---
+onBeforeUnmount(() => {
+  endpointsStore.resetForm()
+  selectedSpId.value = ''
+  formRef.value.resetValidation()
+  isValid.value = false
+})
+
+// --- Guardar ---
 const save = async () => {
-  loading.value = true
-  try {
-    const payload = {
-      name: form.value.name,
-      image: form.value.image,
-      resources: form.value.resources,
-      security_policy: form.value.security_policy,
-      policy_id: form.value.policy_id || null
+  let result
+  if (isEditing.value) {
+    result = await endpointsStore.update_endpoint(route.query.edit)
+  } else {
+    result = await endpointsStore.create_endpoint()
+  }
+
+  if (result.color === 'success') {
+    snackbar.value = {
+      show: true,
+      text: isEditing.value
+        ? `Endpoint updated successfully: ${result.data.name}`
+        : `Endpoint created successfully: ${result.data.name}`,
+      color: 'success'
     }
-    const result = await endpointsStore.create_endpoint(payload)
-    if (result.color === "success") {
-      alert('Endpoint creado: ' + result.data.name)
-      form.value = { name: '', image: '', resources: { cpu: '', ram: '' }, security_policy: { sp_id:'', roles:[], requires_authentication:false } }
+
+    formRef.value.resetValidation()
+
+    if (!isEditing.value) {
+      isValid.value = false
+      endpointsStore.resetForm()
       selectedSpId.value = ''
-    } else {
-      alert('Error: ' + result.message)
     }
-  } catch (e) {
-    console.error(e)
-    alert('Error inesperado')
-  } finally {
-    loading.value = false
+  } else {
+    snackbar.value = { show: true, text: 'Error: ' + result.message, color: 'error' }
   }
 }
 </script>
+
