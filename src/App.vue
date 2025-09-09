@@ -53,35 +53,42 @@
           ></v-list-item>
           <v-list-item
             link
-            prepend-icon="mdi-grid"
+            prepend-icon="mdi-access-point"
             title="My Endpoints"
             value="myEndpoints"
             @click="navigateTo('/endpoints')"
           ></v-list-item>
           <v-list-item
             link
-            prepend-icon="mdi-grid"
+            prepend-icon="mdi-layers"
+            title="My Services"
+            value="myServices"
+            @click="navigateTo('/services')"
+          ></v-list-item>
+          <v-list-item
+            link
+            prepend-icon="mdi-cogs"
             title="My Microservices"
             value="myMicroservices"
             @click="navigateTo('/microservices')"
           ></v-list-item>
           <v-list-item
             link
-            prepend-icon="mdi-grid"
+            prepend-icon="mdi-code-tags"
             title="My Functions"
             value="myFunctions"
             @click="navigateTo('/functions')"
           ></v-list-item>
           <v-list-item
             link
-            prepend-icon="mdi-grid"
+            prepend-icon="mdi-account-cog"
             title="Roles"
             value="Roles"
             @click="navigateTo('/roles')"
           ></v-list-item>
           <v-list-item
             link
-            prepend-icon="mdi-grid"
+            prepend-icon="mdi-shield-key"
             title="SecurityPolicy"
             value="SecurityPolicy"
             @click="navigateTo('/security_policy')"
