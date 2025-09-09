@@ -2,19 +2,20 @@
   <v-main class="d-flex-column justify-center align-center pa-5" style="min-height: 300px">
     <v-container>
       <div class="d-flex flex-column">
-        <div class="d-flex align-center">
+        <div class="d-flex align-center mb-4">
           <h1>Endpoints</h1>
           <v-spacer></v-spacer>
 
           <!-- Botón New Endpoint -->
           <router-link to="/create-endpoint">
-            <button class="btn-create-endpoint">
+            <v-btn class="btn-create-endpoint">
+              <v-icon left>mdi-plus</v-icon>
               New Endpoint
-            </button>
+            </v-btn>
           </router-link>
 
           <!-- Barra de búsqueda -->
-          <SearchBar @update:search="handleSearch" />
+          <SearchBar @update:search="handleSearch" class="ml-4" />
         </div>
 
         <v-divider></v-divider>
@@ -22,30 +23,43 @@
         <div class="mt-5 pa-5">
           <CardVariant
             v-for="(ep, index) in filteredEndpoints"
-            :key="index"
+            :key="ep.endpoint_id"
             :title="`Endpoint: ${ep.name}`"
-            :description="`Microservice: ${ep.microservice_id} | Deployment: ${ep.deployment_status}`"
+            :description="`Image: ${ep.image} | CPU: ${ep.resources.cpu} | RAM: ${ep.resources.ram}`"
             :autor="ep.created_at"
           >
             <template #button>
-              <button
+              <v-btn small class="btn-edit" @click="handleEdit(ep)">
+                <v-icon>mdi-pencil</v-icon>
+              </v-btn>
 
-                @click="handleEdit(ep)"
-                class="btn-edit"
-              >
-                Edit
-              </button>
-
-              <button
-                @click="handleDelete(ep, index)"
-                class="btn-delete"
-              >
-                Delete
-              </button>
+              <v-btn class="btn-delete" variant="flat" @click="openDeleteDialog(ep, index)">
+                <v-icon left>mdi-delete</v-icon>
+              </v-btn>
             </template>
           </CardVariant>
         </div>
       </div>
+
+      <!-- Dialogo de confirmación -->
+      <v-dialog v-model="dialog.show" max-width="400">
+        <v-card>
+          <v-card-title class="text-h6">Confirm Deletion</v-card-title>
+          <v-card-text>
+            Are you sure you want to delete the endpoint "{{ dialog.endpoint?.name }}"?
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn text color="grey" @click="dialog.show = false">Cancel</v-btn>
+            <v-btn text color="red" @click="confirmDelete">Delete</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Snackbar para notificaciones -->
+      <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
+        {{ snackbar.text }}
+      </v-snackbar>
     </v-container>
   </v-main>
 </template>
@@ -54,16 +68,18 @@
 import SearchBar from "@/components/SearchBar.vue"
 import CardVariant from "@/components/CardVariant.vue"
 import { useEndpointsStore } from "@/store/endpoints"
-
 import { ref, onMounted, computed } from "vue"
+import router from "@/router"
 
 const endpointsStore = useEndpointsStore()
 const currentSearch = ref("")
 
+// Snackbar
+const snackbar = ref({ show: false, text: "", color: "success" })
+
 onMounted(async () => {
   await endpointsStore.get_endpoints()
 })
-
 
 // Filtro por nombre de endpoint
 const filteredEndpoints = computed(() => {
@@ -77,69 +93,65 @@ const handleSearch = (search) => {
   currentSearch.value = search
 }
 
-
-// ✏️ Editar endpoint
+// Editar endpoint
 const handleEdit = (ep) => {
-  console.log("Editar endpoint:", ep)
+  router.push({ path: `/create-endpoint`, query: { edit: ep.endpoint_id } })
 }
 
-// 🗑️ Eliminar endpoint
-const handleDelete = async (ep, index) => {
+// Dialog de eliminación
+const dialog = ref({ show: false, endpoint: null, index: null })
+
+const openDeleteDialog = (ep, index) => {
+  dialog.value.endpoint = ep
+  dialog.value.index = index
+  dialog.value.show = true
+}
+
+const confirmDelete = async () => {
+  if (!dialog.value.endpoint) return
   try {
-    const result = await endpointsStore.delete_endpoint(ep.endpoint_id) 
-    if(result.color === "success"){
-      alert(`Endpoint eliminado: ${ep.name}`)
+    const result = await endpointsStore.delete_endpoint(dialog.value.endpoint.endpoint_id)
+    if (result.color === "success") {
+      snackbar.value = { show: true, text: `Endpoint deleted: ${dialog.value.endpoint.name}`, color: "success" }
     } else {
-      alert("Error al eliminar: " + result.message)
+      snackbar.value = { show: true, text: "Failed to delete: " + result.message, color: "error" }
     }
-  } catch(e){
+  } catch (e) {
     console.error(e)
-    alert("Error inesperado")
+    snackbar.value = { show: true, text: "Unexpected error", color: "error" }
+  } finally {
+    dialog.value.show = false
   }
 }
 </script>
 
 <style scoped>
-
+/* Botón Editar */
 .btn-edit {
   background-color: #11212d;
   color: white;
   padding: 5px 15px;
-  border: none;
   border-radius: 5px;
   cursor: pointer;
   margin-left: 10px;
 }
 
-.btn-edit:hover {
-  background-color: #000000;
+/* Botón Crear Nuevo Endpoint */
+.btn-create-endpoint {
+  background-color: #11212d;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
 }
 
 .btn-delete {
   background-color: #d00000;
   color: white;
   padding: 5px 15px;
-  border: none;
   border-radius: 5px;
   cursor: pointer;
   margin-left: 10px;
-}
-
-.btn-delete:hover {
-  background-color: #9d0000;
-}
-
-.btn-create-endpoint {
-  background-color: #11212d;
-  color: white;
-  padding: 5px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-right: 10px;
-}
-
-.btn-create-endpoint:hover {
-  background-color: #000000;
 }
 </style>

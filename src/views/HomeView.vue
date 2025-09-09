@@ -1,96 +1,100 @@
 <template>
-  <!-- main -->
-  <v-main
-    class="d-flex-column justify-center align-center pa-5"
-    style="min-height: 300px"
-  >
-    <v-container>
-      <div class="d-flex flex-column">
-        <div class="d-flex">
-          <h1>Home</h1>
-          <v-spacer></v-spacer>
-          <!-- barra busqueda -->
-          <SearchBar @update:search="handleSearch" />
-        </div>
-        <v-divider></v-divider>
-        <div class="mt-5 pa-5">
-          <CardVariant
-            v-for="(service, id) in services_store.services"
-            :key="id"
-            :title="`Service ${service.service_id}`"
-            :description="`${service.resources.cpu} core ${service.resources.cpu>1 ? 's':''} /${service.resources.ram}`"
-            :autor="service.created_at"
-          >
-            <!-- boton agregar -->
-            <template #button>
-              <button
-                @click="handleAdd(service)"
-                :class="service.added ? 'btn-added' : 'btn-add'"
-                :disabled="service.added"
-              >
-                {{ service.added ? "Added" : "Add" }}
-              </button>
-            </template>
-          </CardVariant>
-        </div>
-      </div>
+  <v-main class="pa-6" style="background-color: #f5f5f5; min-height: 100vh;">
+    <v-container fluid>
+      <h1 class="mb-6">Home</h1>
+      <v-row dense>
+        <!-- Roles -->
+        <v-col cols="12" sm="6" md="2">
+          <v-card class="pa-6" color="#3f51b5" dark>
+            <div class="d-flex justify-space-between align-center">
+              <v-icon large color="white">mdi-account-group</v-icon>
+              <div class="text-h4 white--text">{{ roles_store.roles.length }}</div>
+            </div>
+            <div class="mt-3 white--text font-weight-medium">Roles</div>
+          </v-card>
+        </v-col>
+
+        <!-- Security Policies -->
+        <v-col cols="12" sm="6" md="2">
+          <v-card class="pa-6" color="#009688" dark>
+            <div class="d-flex justify-space-between align-center">
+              <v-icon large color="white">mdi-shield-check</v-icon>
+              <div class="text-h4 white--text">{{ security_store.policies.length }}</div>
+            </div>
+            <div class="mt-3 white--text font-weight-medium">Security Policies</div>
+          </v-card>
+        </v-col>
+
+        <!-- Endpoints -->
+        <v-col cols="12" sm="6" md="2">
+          <v-card class="pa-6" color="#673ab7" dark>
+            <div class="d-flex justify-space-between align-center">
+              <v-icon large color="white">mdi-server</v-icon>
+              <div class="text-h4 white--text">{{ endpoints_store.endpoints.length }}</div>
+            </div>
+            <div class="mt-3 white--text font-weight-medium">Endpoints</div>
+          </v-card>
+        </v-col>
+
+        <!-- Services -->
+        <v-col cols="12" sm="6" md="2">
+          <v-card class="pa-6" color="#ff5722" dark>
+            <div class="d-flex justify-space-between align-center">
+              <v-icon large color="white">mdi-cloud</v-icon>
+              <div class="text-h4 white--text">{{ services_store.services.length }}</div>
+            </div>
+            <div class="mt-3 white--text font-weight-medium">Services</div>
+          </v-card>
+        </v-col>
+
+        <!-- Microservices -->
+        <v-col cols="12" sm="6" md="2">
+          <v-card class="pa-6" color="#1976d2" dark>
+            <div class="d-flex justify-space-between align-center">
+              <v-icon large color="white">mdi-cogs</v-icon>
+              <div class="text-h4 white--text">{{ microservices_store.microservices.length }}</div>
+            </div>
+            <div class="mt-3 font-weight-medium white--text">Microservices</div>
+          </v-card>
+        </v-col>
+
+        <!-- Functions -->
+        <v-col cols="12" sm="6" md="2">
+          <v-card class="pa-6" color="#e91e63" dark>
+            <div class="d-flex justify-space-between align-center">
+              <v-icon large color="white">mdi-function</v-icon>
+              <div class="text-h4 white--text">{{ functions_store.functions.length }}</div>
+            </div>
+            <div class="mt-3 white--text font-weight-medium">Functions</div>
+          </v-card>
+        </v-col>
+      </v-row>
     </v-container>
   </v-main>
 </template>
 
 <script setup>
-import SearchBar from "@/components/SearchBar.vue";
-import CardVariant from "@/components/CardVariant.vue";
-import {useServicesStore} from "@/store/services"
-import { ref, onMounted} from "vue";
+import { onMounted } from "vue";
+import { useRolesStore } from "@/store/roles";
+import { useSecurityPoliciesStore } from "@/store/security_policy";
+import { useEndpointsStore } from "@/store/endpoints";
+import { useServicesStore } from "@/store/services";
+import { useMicroservicesStore } from "@/store/microservices";
+import { useFunctionsStore } from "@/store/functions";
 
-const services_store = useServicesStore()
-// const services = ref([])
+const roles_store = useRolesStore();
+const security_store = useSecurityPoliciesStore();
+const endpoints_store = useEndpointsStore();
+const services_store = useServicesStore();
+const microservices_store = useMicroservicesStore();
+const functions_store = useFunctionsStore();
 
-
-onMounted(async ()=>{
-  const result = await services_store.get_services()
-  // services.value = result.services.value
-
-
-})
-
-const currentSearch = ref("");
-const handleSearch = (search) => {
-  currentSearch.value = search;
-};
-
-
-
+onMounted(async () => {
+  await roles_store.get_roles();
+  await security_store.get_policies();
+  await endpoints_store.get_endpoints();
+  await services_store.get_services();
+  await microservices_store.get_microservices();
+  await functions_store.get_functions();
+});
 </script>
-
-
-
-
-
-
-<style scoped>
-.btn-add {
-  background-color: #11212d;
-  color: white;
-  padding: 5px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-left: 15px;
-}
-
-.btn-add:hover {
-  background-color: #000000;
-}
-
-.btn-added {
-  background-color: #57778f;
-  color: white;
-  padding: 5px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-left: 15px;
-}
-</style>
