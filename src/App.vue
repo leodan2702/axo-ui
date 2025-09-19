@@ -40,37 +40,65 @@
           <v-list-item
             link
             prepend-icon="mdi-folder"
-            title="My Objects"
+            title="Objects"
             value="myObjects"
             @click="navigateTo('/my-objects')"
           ></v-list-item>
-          <v-list-item
+          <!-- <v-list-item
             link
             prepend-icon="mdi-cube"
             title="My Virtual Environment"
             value="myEnvironment"
             @click="navigateTo('/my-objects')"
-          ></v-list-item>
+          ></v-list-item> -->
           <v-list-item
             link
-            prepend-icon="mdi-grid"
-            title="My Endpoints"
+            prepend-icon="mdi-access-point"
+            title="Endpoints"
             value="myEndpoints"
             @click="navigateTo('/endpoints')"
           ></v-list-item>
           <v-list-item
             link
-            prepend-icon="mdi-grid"
-            title="My Microservices"
-            value="myMicroservices"
-            @click="navigateTo('/microservices')"
+            prepend-icon="mdi-layers"
+            title="Services"
+            value="myServices"
+            @click="navigateTo('/services')"
           ></v-list-item>
           <v-list-item
             link
-            prepend-icon="mdi-grid"
+            prepend-icon="mdi-cogs"
+            title="Microservices"
+            value="myMicroservices"
+            @click="navigateTo('/microservices')"
+          ></v-list-item>
+          <!-- <v-list-item
+            link
+            prepend-icon="mdi-code-tags"
             title="My Functions"
             value="myFunctions"
             @click="navigateTo('/functions')"
+          ></v-list-item> -->
+          <v-list-item
+            link
+            prepend-icon="mdi-account-cog"
+            title="Roles"
+            value="Roles"
+            @click="navigateTo('/roles')"
+          ></v-list-item>
+          <v-list-item
+            link
+            prepend-icon="mdi-shield-key"
+            title="SecurityPolicy"
+            value="SecurityPolicy"
+            @click="navigateTo('/security_policy')"
+          ></v-list-item>
+          <v-spacer></v-spacer>
+          <v-list-item
+            prepend-icon="mdi-graph"
+            title="Design"
+            value="design"
+            @click="navigateTo('/design')"
           ></v-list-item>
           <v-spacer></v-spacer>
           <v-list-item
@@ -85,7 +113,9 @@
 
     <!-- Main Content -->
     <v-main>
-      <RouterView />
+      <RouterView v-slot="{ Component, route }">
+          <component :is="Component" :key="route.fullPath" />
+      </RouterView>
     </v-main>
 
     <!-- Footer -->

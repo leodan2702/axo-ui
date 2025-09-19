@@ -3,14 +3,14 @@
     <v-container>
       <div class="d-flex flex-column">
         <div class="d-flex align-center mb-4">
-          <h1>Endpoints</h1>
+          <h1>Services</h1>
           <v-spacer></v-spacer>
 
-          <!-- Botón New Endpoint -->
-          <router-link to="/create-endpoint">
-            <v-btn class="btn-create-endpoint">
+          <!-- Botón New Service -->
+          <router-link to="/create-service">
+            <v-btn class="btn-create-service">
               <v-icon left>mdi-plus</v-icon>
-              New Endpoint
+              New Service
             </v-btn>
           </router-link>
 
@@ -22,18 +22,17 @@
 
         <div class="mt-5 pa-5">
           <CardVariant
-            v-for="(ep, index) in filteredEndpoints"
-            :key="ep.endpoint_id"
-            :title="`Endpoint: ${ep.name}`"
-            :description="`Image: ${ep.image} | CPU: ${ep.resources.cpu} | RAM: ${ep.resources.ram}`"
-            :autor="ep.created_at"
+            v-for="(service, index) in filteredServices"
+            :key="service.service_id"
+            :title="`Service: ${service.name}`"
+            :description="`CPU: ${service.resources.cpu} | RAM: ${service.resources.ram}`"
           >
             <template #button>
-              <v-btn small class="btn-edit" @click="handleEdit(ep)">
+              <v-btn small class="btn-edit" @click="handleEdit(service)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
 
-              <v-btn class="btn-delete" variant="flat" @click="openDeleteDialog(ep, index)">
+              <v-btn class="btn-delete" variant="flat" @click="openDeleteDialog(service, index)">
                 <v-icon left>mdi-delete</v-icon>
               </v-btn>
             </template>
@@ -46,7 +45,7 @@
         <v-card>
           <v-card-title class="text-h6">Confirm Deletion</v-card-title>
           <v-card-text>
-            Are you sure you want to delete the endpoint "{{ dialog.endpoint?.name }}"?
+            Are you sure you want to delete the service "{{ dialog.service?.service_id }}"?
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -67,25 +66,25 @@
 <script setup>
 import SearchBar from "@/components/SearchBar.vue"
 import CardVariant from "@/components/CardVariant.vue"
-import { useEndpointsStore } from "@/store/endpoints"
+import { useServicesStore } from "@/store/services"
 import { ref, onMounted, computed } from "vue"
 import router from "@/router"
 
-const endpointsStore = useEndpointsStore()
+const servicesStore = useServicesStore()
 const currentSearch = ref("")
 
 // Snackbar
 const snackbar = ref({ show: false, text: "", color: "success" })
 
 onMounted(async () => {
-  await endpointsStore.get_endpoints()
+  await servicesStore.get_services()
 })
 
-// Filtro por nombre de endpoint
-const filteredEndpoints = computed(() => {
-  if (!currentSearch.value) return endpointsStore.endpoints
-  return endpointsStore.endpoints.filter(ep =>
-    ep.name.toLowerCase().includes(currentSearch.value.toLowerCase())
+// Filtro por SP ID
+const filteredServices = computed(() => {
+  if (!currentSearch.value) return servicesStore.services
+  return servicesStore.services.filter(service =>
+    service.service_id.toLowerCase().includes(currentSearch.value.toLowerCase())
   )
 })
 
@@ -93,26 +92,26 @@ const handleSearch = (search) => {
   currentSearch.value = search
 }
 
-// Editar endpoint
-const handleEdit = (ep) => {
-  router.push({ path: `/create-endpoint`, query: { edit: ep.endpoint_id } })
+// Editar service
+const handleEdit = (service) => {
+  router.push({ path: `/create-service`, query: { edit: service.service_id } })
 }
 
 // Dialog de eliminación
-const dialog = ref({ show: false, endpoint: null, index: null })
+const dialog = ref({ show: false, service: null, index: null })
 
-const openDeleteDialog = (ep, index) => {
-  dialog.value.endpoint = ep
+const openDeleteDialog = (service, index) => {
+  dialog.value.service = service
   dialog.value.index = index
   dialog.value.show = true
 }
 
 const confirmDelete = async () => {
-  if (!dialog.value.endpoint) return
+  if (!dialog.value.service) return
   try {
-    const result = await endpointsStore.delete_endpoint(dialog.value.endpoint.endpoint_id)
+    const result = await servicesStore.delete_service(dialog.value.service.service_id)
     if (result.color === "success") {
-      snackbar.value = { show: true, text: `Endpoint deleted: ${dialog.value.endpoint.name}`, color: "success" }
+      snackbar.value = { show: true, text: `Service deleted: ${dialog.value.service.service_id}`, color: "success" }
     } else {
       snackbar.value = { show: true, text: "Failed to delete: " + result.message, color: "error" }
     }
@@ -136,8 +135,8 @@ const confirmDelete = async () => {
   margin-left: 10px;
 }
 
-/* Botón Crear Nuevo Endpoint */
-.btn-create-endpoint {
+/* Botón Crear Nuevo Service */
+.btn-create-service {
   background-color: #11212d;
   color: white;
   padding: 5px 15px;

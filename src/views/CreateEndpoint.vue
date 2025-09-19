@@ -1,0 +1,25 @@
+<template>
+  <v-main 
+    class="d-flex-column justify-center align-center pa-5"
+    style="min-height: 300px;"
+  >
+    <v-container>
+        <div class="d-flex align-center mb-4">
+          <h1>Create Endpoint</h1>
+        </div>
+
+        <v-divider></v-divider>
+
+        <!-- Contenedor centrado del formulario -->
+        <v-sheet class="mt-5 d-flex justify-center" style="width: 100%;">
+          <FormCreateEndpoint />
+        </v-sheet>
+  
+    </v-container>                  
+  </v-main>
+</template>
+
+<script setup>
+import FormCreateEndpoint from '@/components/FormCreateEndpoint.vue';
+</script>
+
