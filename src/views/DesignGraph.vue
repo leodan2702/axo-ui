@@ -29,14 +29,14 @@ const nodes = ref([
     position: { x: 400, y: 5 },
     // all nodes can have a data object containing any data you want to pass to the node
     // a label can property can be used for default nodes
-    data: { label: 'Microservice 1' },
+    data: { label: 'OptimizationObject 1' },
   },
 
   // default node, you can omit `type: 'default'` as it's the fallback type
   { 
     id: '2', 
     position: { x: 100, y: 100 },
-    data: { label: 'Service 1' },
+    data: { label: 'Bucket 1' },
   },
 
   // An output node, specified by using `type: 'output'`
@@ -44,7 +44,7 @@ const nodes = ref([
     id: '3', 
     type: 'output', 
     position: { x: 400, y: 200 },
-    data: { label: 'Microservice 2' },
+    data: { label: 'OptimizationObject 2' },
   },
 
   // this is a custom node
@@ -55,7 +55,7 @@ const nodes = ref([
     type: 'special', // <-- this is the custom node type name
     position: { x: 700, y: 100 },
     data: {
-      label: 'Function',
+      label: 'Bucket 2',
       hello: 'world',
     },
   },
@@ -69,6 +69,7 @@ const edges = ref([
     id: 'e1->2',
     source: '1', 
     target: '2',
+    animated: true,
   },
 
   // set `animated: true` to create an animated edge path
@@ -85,7 +86,20 @@ const edges = ref([
     id: 'e3->4',
     type: 'special',
     source: '3',
+    animated: true,
     target: '4',
+
+    // all edges can have a data object containing any data you want to pass to the edge
+    data: {
+      hello: 'world',
+    }
+  },
+    {
+    id: 'e3->5',
+    type: 'special',
+    source: '4',
+    target: '1',
+    animated: true,
 
     // all edges can have a data object containing any data you want to pass to the edge
     data: {
