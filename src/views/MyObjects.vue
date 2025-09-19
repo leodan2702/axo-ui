@@ -56,20 +56,6 @@ const handleSearch = (search) => {
 };
 
 const objects = ref([
-    {
-        id: 1,
-        title: 'Object 1',
-        description: 'Description',
-        autor: 'User',
-        added: false
-    },
-    {
-        id: 2,
-        title: 'Object 2',
-        description: 'Description',
-        autor: 'User',
-        added: false
-    },
 ]);
 
 </script>

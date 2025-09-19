@@ -40,45 +40,45 @@
           <v-list-item
             link
             prepend-icon="mdi-folder"
-            title="My Objects"
+            title="Objects"
             value="myObjects"
             @click="navigateTo('/my-objects')"
           ></v-list-item>
-          <v-list-item
+          <!-- <v-list-item
             link
             prepend-icon="mdi-cube"
             title="My Virtual Environment"
             value="myEnvironment"
             @click="navigateTo('/my-objects')"
-          ></v-list-item>
+          ></v-list-item> -->
           <v-list-item
             link
             prepend-icon="mdi-access-point"
-            title="My Endpoints"
+            title="Endpoints"
             value="myEndpoints"
             @click="navigateTo('/endpoints')"
           ></v-list-item>
           <v-list-item
             link
             prepend-icon="mdi-layers"
-            title="My Services"
+            title="Services"
             value="myServices"
             @click="navigateTo('/services')"
           ></v-list-item>
           <v-list-item
             link
             prepend-icon="mdi-cogs"
-            title="My Microservices"
+            title="Microservices"
             value="myMicroservices"
             @click="navigateTo('/microservices')"
           ></v-list-item>
-          <v-list-item
+          <!-- <v-list-item
             link
             prepend-icon="mdi-code-tags"
             title="My Functions"
             value="myFunctions"
             @click="navigateTo('/functions')"
-          ></v-list-item>
+          ></v-list-item> -->
           <v-list-item
             link
             prepend-icon="mdi-account-cog"
