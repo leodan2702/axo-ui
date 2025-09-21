@@ -1,132 +1,197 @@
 <template>
-  <!-- main -->
-  <v-main 
-    class="d-flex flex-column justify-center align-center"
-  >
-    <v-container fluid class="pa-0 ma-0">
-      <div class="flow-wrap mx-auto">
-        <VueFlow :nodes="nodes" :edges="edges">
-        </VueFlow>
-      </div>
+  <v-main class="d-flex flex-column pa-0 ma-0">
+    <v-container fluid class="pa-0 ma-0 d-flex h-100">
 
-    </v-container>                  
+
+      <SidePanel :objects="availableObjects" />
+
+
+      <div class="graph-container">
+
+        <div class="toolbar">
+          <button class="btn primary" @click="createBucket">
+            <img :src="bucket" alt="bucket" class="btn-icon" />
+            Create Bucket
+          </button>
+          <button class="btn primary" @click="clearGraph"><img :src="clean" alt="clean" class="btn-icon" /> Clean Canvas</button>
+          <button class="btn primary"><img :src="iconrun" alt="iconrun" class="btn-icon" /> Run Choreograpy</button>
+        </div>
+
+        <div class="flow-wrap" @dragover="onDragOver" @drop="onDrop">
+          <VueFlow
+            v-model:nodes="nodes"
+            v-model:edges="edges"
+            :node-types="nodeTypes"
+            :default-edge-options="{ animated: true }"
+            fit-view-on-init
+            @connect="onConnect"
+          />
+        </div>
+      </div>
+    </v-container>
   </v-main>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { VueFlow } from '@vue-flow/core'
+import { ref } from "vue"
+import { VueFlow, useVueFlow } from "@vue-flow/core"
+import "@vue-flow/core/dist/style.css"
+import "@vue-flow/core/dist/theme-default.css"
+import OA from "@/assets/axo_OA_assets.png"
+import bucket from "@/assets/axo_bucket_assets.png"
+import clean from "@/assets/icons-clean.png"
+import iconrun from "@/assets/icon-run.png"
+import SidePanel from "../components/SidePanel.vue"
+import CustomNode from "../components/CustomNode.vue"
 
-// these components are only shown as examples of how to use a custom node or edge
-// you can find many examples of how to create these custom components in the examples page of the docs
+const nodeTypes = { custom: CustomNode }
+const { project } = useVueFlow()
 
-// these are our nodes
-const nodes = ref([
-  // an input node, specified by using `type: 'input'`
-  { 
-    id: '1',
-    type: 'input', 
-    position: { x: 400, y: 5 },
-    // all nodes can have a data object containing any data you want to pass to the node
-    // a label can property can be used for default nodes
-    data: { label: 'OptimizationObject 1' },
-  },
+/* Objetos disponibles en el panel */
+const availableObjects = ref([
+  { id: "ao1", class_name: "BellmanFord1", type: "BellmanFord", alias: "bellmanford_v1.run", icon: OA },
+  { id: "ao2", class_name: "Plot", type: "Plot", alias: "plot.run", icon: OA },
+  { id: "ao3", class_name: "OptimizationObject", type: "OptimizationObject", alias: "optimizer_v2.run", icon: OA },
+  { id: "ao4", class_name: "OptimizationObject", type: "OptimizationObject", alias: "optimizer_v2.run", icon: OA },
+  { id: "ao5", class_name: "OptimizationObject", type: "OptimizationObject", alias: "optimizer_v2.run", icon: OA },
+  { id: "ao5", class_name: "OptimizationObject", type: "OptimizationObject", alias: "optimizer_v2.run", icon: OA },
+  
 
-  // default node, you can omit `type: 'default'` as it's the fallback type
-  { 
-    id: '2', 
-    position: { x: 100, y: 100 },
-    data: { label: 'Bucket 1' },
-  },
+  
+])
 
-  // An output node, specified by using `type: 'output'`
-  { 
-    id: '3', 
-    type: 'output', 
-    position: { x: 400, y: 200 },
-    data: { label: 'OptimizationObject 2' },
-  },
+/* Estado del grafo */
+const nodes = ref([])
+const edges = ref([])
 
-  // this is a custom node
-  // we set it by using a custom type name we choose, in this example `special`
-  // the name can be freely chosen, there are no restrictions as long as it's a string
-  {
-    id: '4',
-    type: 'special', // <-- this is the custom node type name
-    position: { x: 700, y: 100 },
-    data: {
-      label: 'Bucket 2',
-      hello: 'world',
+/* Crear nuevo bucket en el panel */
+const createBucket = () => {
+  const newId = "bucket-" + Date.now()
+
+  nodes.value.push({
+    id: newId,
+    type: "custom",
+    position: { x: 200, y: 200 }, // 👈 posición inicial (puedes calcularla o centrarla)
+    data: { label: "Bucket", icon: bucket },
+    originData: {
+      id: newId,
+      class_name: "Bucket",
+      type: "Bucket",
+      icon: bucket,
     },
-  },
-])
-
-// these are our edges
-const edges = ref([
-  // default bezier edge
-  // consists of an edge id, source node id and target node id
-  { 
-    id: 'e1->2',
-    source: '1', 
-    target: '2',
-    animated: true,
-  },
-
-  // set `animated: true` to create an animated edge path
-  { 
-    id: 'e2->3',
-    source: '2', 
-    target: '3', 
-    animated: true,
-  },
-
-  // a custom edge, specified by using a custom type name
-  // we choose `type: 'special'` for this example
-  {
-    id: 'e3->4',
-    type: 'special',
-    source: '3',
-    animated: true,
-    target: '4',
-
-    // all edges can have a data object containing any data you want to pass to the edge
-    data: {
-      hello: 'world',
-    }
-  },
-    {
-    id: 'e3->5',
-    type: 'special',
-    source: '4',
-    target: '1',
-    animated: true,
-
-    // all edges can have a data object containing any data you want to pass to the edge
-    data: {
-      hello: 'world',
-    }
-  },
-])
-</script>
-
-
-<style>
-/* import the necessary styles for Vue Flow to work */
-@import '@vue-flow/core/dist/style.css';
-
-/* import the default theme, this is optional but generally recommended */
-@import '@vue-flow/core/dist/theme-default.css';
-.flow-wrap {
-  width: min(1200px, 90vw);   /* pick your target width */
-  height: 700px;               /* or 600px / 100% if parent is sized */
-  /* optional centering helper when not using Vuetify utils: margin: 0 auto; */
+  })
 }
 
-/* Let Vue Flow fill the wrapper */
+
+/* Limpiar grafo */
+const clearGraph = () => {
+  nodes.value = []
+  edges.value = []
+}
+
+/* Drag & Drop */
+const onDragOver = (event) => {
+  event.preventDefault()
+  event.dataTransfer.dropEffect = "move"
+}
+
+const onDrop = (event) => {
+  const wrapper = event.currentTarget
+  const bounds = wrapper.getBoundingClientRect()
+  const raw = event.dataTransfer.getData("application/vueflow")
+  if (!raw) return
+
+  const data = JSON.parse(raw)
+  const pos = { x: event.clientX - bounds.left, y: event.clientY - bounds.top }
+  const position = project(pos)
+
+  nodes.value.push({
+    id: `${data.id}-${Date.now()}`,
+    type: "custom",
+    position,
+    data: { label: data.class_name, icon: data.icon },
+    originData: data,
+  })
+}
+
+/* Guardar conexiones */
+const onConnect = (params) => {
+  edges.value.push({ ...params, style: { stroke: '#2563eb' } })
+}
+</script>
+
+<style>
+.flow-wrap {
+  flex: 1;
+  height: 90vh;
+}
+
 .flow-wrap .vue-flow {
   width: 100%;
   height: 100%;
-  /* background-color: gray; */
+}
+
+.graph-container {
+  flex: 1;
+  position: relative;
+}
+
+.toolbar {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  background: #ffffff;
+  padding: 10px 18px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 17px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn.primary {
+  background: #f3f4f6;
+  color: #374151;
+}
+.btn.primary:hover {
+  background: #e5e7eb;
+}
+
+.btn.danger {
+  background: #f87171;
+  color: white;
+}
+.btn.danger:hover {
+  background: #ef4444;
+}
+
+.btn.success {
+  background: #34d399;
+  color: white;
+}
+.btn.success:hover {
+  background: #10b981;
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
 }
 
 </style>
