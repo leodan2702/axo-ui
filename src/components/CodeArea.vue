@@ -3,7 +3,7 @@
     theme="vs"
     :options="options"
     language="python"
-    :width="800"
+    :width="500"
     :height="800"
     :diffEditor="false"
     :original="original"
