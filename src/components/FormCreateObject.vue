@@ -11,41 +11,48 @@
       :lazy-validation="true"
     >
       <!-- Module -->
-      <v-text-field
+      <!-- <v-text-field
         v-model="activeObjectsStore.form.axo_module"
         label="Module"
         variant="filled"
         :rules="[rules.required]"
         required
         prepend-inner-icon="mdi-cube-outline"
-      />
+      /> -->
 
       <!-- Class Name -->
-      <v-text-field
+      <!-- <v-text-field
         v-model="activeObjectsStore.form.axo_class_name"
         label="Class Name"
         variant="filled"
         :rules="[rules.required]"
         required
         prepend-inner-icon="mdi-file-document-outline"
-      />
+      /> -->
 
+      <!-- Alias -->
+      <v-text-field
+        v-model="activeObjectsStore.form.axo_alias"
+        label="Alias"
+        variant="filled"
+        prepend-inner-icon="mdi-tag"
+      />
       <!-- Endpoint asociado -->
       <v-select
         v-model="activeObjectsStore.form.axo_endpoint_id"
         :items="availableEndpoints"
         item-title="name"
         item-value="endpoint_id"
-        label="Associated Endpoint"
+        label="Endpoint"
         variant="filled"
-        prepend-inner-icon="mdi-api"
+        prepend-inner-icon="mdi-cube-outline"
       />
 
       <!-- Read Only -->
-      <v-switch
+      <!-- <v-switch
         v-model="activeObjectsStore.form.axo_is_read_only"
         label="Read Only"
-      />
+      /> -->
 
       <!-- Version editable (sin spinner) -->
       <v-text-field
@@ -58,21 +65,14 @@
         type="text"
       />
 
-      <!-- Alias -->
-      <v-text-field
-        v-model="activeObjectsStore.form.axo_alias"
-        label="Alias"
-        variant="filled"
-        prepend-inner-icon="mdi-tag"
-      />
 
       <!-- URI -->
-      <v-text-field
+      <!-- <v-text-field
         v-model="activeObjectsStore.form.axo_uri"
         label="URI"
         variant="filled"
         prepend-inner-icon="mdi-link-variant"
-      />
+      /> -->
 
       <!-- Dependencias -->
       <v-combobox
@@ -98,7 +98,7 @@
           block
           :disabled="!isValid"
         >
-          {{ isEditing ? 'Update' : 'Save' }}
+          {{ isEditing ? 'Update' : 'Persistency' }}
         </v-btn>
       </div>
     </v-form>

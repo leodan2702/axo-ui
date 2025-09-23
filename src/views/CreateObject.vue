@@ -7,9 +7,9 @@
           <h1>Create Active Object</h1>
           <v-spacer></v-spacer>
           <!-- Botón Persistence -->
-          <button class="btn-persistence">Persistence</button>
+          <!-- <button class="btn-persistence">Persistence</button> -->
           <!-- Botón Run -->
-          <button class="btn-run">Run</button>
+          <!-- <button class="btn-run">Run</button> -->
         </div>
 
         <v-divider></v-divider>
