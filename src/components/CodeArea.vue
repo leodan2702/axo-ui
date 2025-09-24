@@ -3,17 +3,21 @@
     theme="vs"
     :options="options"
     language="python"
-    :width="500"
-    :height="800"
+    :width="'100%'"  
+    :height="'100%'" 
     :diffEditor="false"
     :original="original"
-    v-model:value="code"
+    v-model:value="activeObjectsStore.form.axo_code"
+    class="code-editor"
   ></MonacoEditor>
 </template>
 
 <script setup>
 import MonacoEditor from 'monaco-editor-vue3'
 import {ref} from "vue"
+import { useActiveObjectsStore } from '@/store/active_objects'
+
+const activeObjectsStore = useActiveObjectsStore()
 const code = ref(`from axo import Axo, axo_method
 
 # write your code here
@@ -22,9 +26,8 @@ const code = ref(`from axo import Axo, axo_method
 
 </script>
 <style scoped>
-.code-area{
-    background-color: #f2f2f2ff ;
-    max-width: 750px;
-    height: 450px;
+.code-editor {
+  width: 90% !important;
+  height: 65vh !important; /* ocupa 75% de la altura visible */
 }
 </style>

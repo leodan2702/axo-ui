@@ -16,7 +16,11 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
     axo_endpoint_id: '',
     axo_dependencies: [], // Aquí almacenaremos un array limpio
     axo_uri: '',
-    axo_alias: ''
+    axo_alias: '',
+    axo_code: `from axo import Axo, axo_method
+
+# write your code here
+`
   });
 
   const loading = ref(false);
@@ -30,7 +34,11 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
       axo_endpoint_id: '',
       axo_dependencies: [],
       axo_uri: '',
-      axo_alias: ''
+      axo_alias: '',
+      axo_code: `from axo import Axo, axo_method
+
+# write your code here
+`
     };
   }
 
@@ -115,6 +123,21 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
     }
   }
 
+  async function getActiveObjectSchema(active_object_id) {
+    try {
+      const response = await fetch(
+        `${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/active-objects/${active_object_id}/schema`
+      )
+      if (!response.ok) throw new Error("Failed to fetch schema")
+      const schema = await response.json()
+      return { color: "success", data: schema }
+    } catch (error) {
+      console.error("Error", error)
+      const message = error?.message ?? "Unknown error, please contact support@axo.mx"
+      return { color: "error", message }
+    }
+  }
+
   return {
     activeObjects,
     form,
@@ -123,6 +146,7 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
     getActiveObjects,
     createActiveObject,
     updateActiveObject,
-    deleteActiveObject
+    deleteActiveObject,
+    getActiveObjectSchema
   };
 });

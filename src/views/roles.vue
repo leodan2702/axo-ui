@@ -28,6 +28,7 @@
             :description="role.description"
             :permissions="role.permissions"
             :autor="role.created_at"
+            :image="roles"
           >
             <template #button>
               <!-- Botón Editar con estilo personalizado -->
@@ -73,6 +74,7 @@ import CardVariant from "@/components/CardVariant.vue"
 import { useRolesStore } from "@/store/roles"
 import { ref, onMounted, computed } from "vue"
 import router from "@/router"
+import roles from "@/assets/axo_role_assets.png"
 
 const rolesStore = useRolesStore()
 const currentSearch = ref("")
@@ -170,4 +172,5 @@ const confirmDelete = async () => {
 .btn-delete:hover {
   background-color: #9d0000;
 }
+
 </style>

@@ -75,34 +75,43 @@
       /> -->
 
       <!-- Dependencias -->
-      <v-combobox
-        v-model="activeObjectsStore.form.axo_dependencies"
-        multiple
-        label="Dependencies"
-        variant="filled"
-        prepend-inner-icon="mdi-package-variant"
-        placeholder="Add dependencies one by one"
-        chips
-        clearable
-      ></v-combobox>
+      <!-- Dependencias -->
+  <v-combobox
+    v-model="activeObjectsStore.form.axo_dependencies"
+    multiple
+    label="Dependencies"
+    variant="filled"
+    prepend-inner-icon="mdi-package-variant"
+    placeholder="Add dependencies one by one"
+    chips
+    clearable
+  />
 
+  <!-- Validación oculta del código -->
+  <v-textarea
+    v-model="activeObjectsStore.form.axo_code"
+    label="Code"
+    variant="filled"
+    :rules="[rules.codeRequired]"
+    required
+    style="display: none"
+  />
 
-      <!-- Botón Guardar -->
-      <div class="d-flex mt-4">
-        <v-btn
-          :loading="activeObjectsStore.loading"
-          color="#11222eff"
-          size="large"
-          type="submit"
-          variant="elevated"
-          block
-          :disabled="!isValid"
-        >
-          {{ isEditing ? 'Update' : 'Persistency' }}
-        </v-btn>
-      </div>
-    </v-form>
-
+  <!-- Botón Guardar -->
+  <div class="d-flex mt-4">
+    <v-btn
+      :loading="activeObjectsStore.loading"
+      color="#11222eff"
+      size="large"
+      type="submit"
+      variant="elevated"
+      block
+      :disabled="!isValid"
+    >
+      {{ isEditing ? 'Update' : 'Persistency' }}
+    </v-btn>
+  </div>
+</v-form>
     <!-- Snackbar -->
     <v-snackbar
       v-model="snackbar.show"
@@ -137,7 +146,8 @@ const isEditing = ref(false)
 const snackbar = ref({ show: false, text: '', color: 'success' })
 const rules = {
   required: v => !!v || 'Field required',
-  numeric: v => !isNaN(v) || 'Must be a number'
+  numeric: v => !isNaN(v) || 'Must be a number',
+  codeRequired: v => (v && v.trim().length > 0) || 'Code is required'
 }
 
 const route = useRoute()

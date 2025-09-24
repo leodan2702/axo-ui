@@ -27,6 +27,7 @@
             :title="`Microservice: ${ms.name}`"
             :description="`CPU: ${ms.resources.cpu} | RAM: ${ms.resources.ram} | Functions: ${ms.functions.length}`"
             :autor="ms.created_at"
+            :image="microser"
           >
             <template #button>
               <v-btn small class="btn-edit" @click="handleEdit(ms)">
@@ -70,7 +71,7 @@ import CardVariant from "@/components/CardVariant.vue"
 import { useMicroservicesStore } from "@/store/microservices"
 import { ref, onMounted, computed } from "vue"
 import router from "@/router"
-
+import microser from "@/assets/axo_microser_assets.png"
 const microservicesStore = useMicroservicesStore()
 const currentSearch = ref("")
 
