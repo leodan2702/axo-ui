@@ -7,13 +7,16 @@
     :height="800"
     :diffEditor="false"
     :original="original"
-    v-model:value="code"
+    v-model:value="activeObjectsStore.form.axo_code"
   ></MonacoEditor>
 </template>
 
 <script setup>
 import MonacoEditor from 'monaco-editor-vue3'
 import {ref} from "vue"
+import { useActiveObjectsStore } from '@/store/active_objects'
+
+const activeObjectsStore = useActiveObjectsStore()
 const code = ref(`from axo import Axo, axo_method
 
 # write your code here
