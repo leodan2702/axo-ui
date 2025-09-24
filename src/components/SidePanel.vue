@@ -13,7 +13,7 @@
       >
         <img v-if="obj.icon" :src="obj.icon" class="palette-icon" />
         <span v-else>⚙️</span>
-        {{ obj.class_name }}
+        {{ obj.label }}
       </div>
     </div>
   </div>
@@ -21,15 +21,16 @@
 
 <script setup>
 
-
-
-defineProps({
-    objects: { type: Array, required: true }
+const props = defineProps({
+  objects: {
+    type: Array,
+    required: true
+  }
 })
 
 const onDragStart = (event, obj) => {
-    event.dataTransfer.setData("application/vueflow", JSON.stringify(obj))
-    event.dataTransfer.effectAllowed = "move"
+  event.dataTransfer.setData("application/vueflow", JSON.stringify(obj))
+  event.dataTransfer.effectAllowed = "move"
 }
 </script>
 
