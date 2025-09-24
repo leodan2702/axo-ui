@@ -12,6 +12,11 @@
             Create Bucket
           </button>
 
+          <button class="btn primary" @click="reconfigureSelected">
+            <img :src="OA" alt="configure" class="btn-icon" />
+            Configure Object
+          </button>
+
           <button class="btn primary" @click="clearGraph">
             <img :src="clean" alt="clean" class="btn-icon" />
             Clean Canvas
@@ -143,6 +148,15 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener("keydown", onKeyDown)
 })
+
+const reconfigureSelected = async () => {
+  const selectedNode = nodes.value.find((n) => n.selected)
+  if (!selectedNode) {
+    snackbar.value = { show: true, text: "Select an object first", color: "error" }
+    return
+  }
+  await openConfig(selectedNode)
+}
 
 /* Crear bucket */
 const createBucket = () => {
