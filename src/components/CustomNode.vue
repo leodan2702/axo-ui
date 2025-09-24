@@ -46,4 +46,19 @@ defineProps({
 .fallback {
   font-size: 30px;
 }
+
+
+/* Quitar zoom feo al recuadro */
+.vue-flow__node.selected .custom-node {
+  outline: none;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Aplica zoom + glow SOLO al ícono */
+.vue-flow__node.selected .custom-node .node-icon {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.7));
+  transition: all 0.2s ease-in-out;
+}
 </style>
