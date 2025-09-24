@@ -3,11 +3,12 @@
     theme="vs"
     :options="options"
     language="python"
-    :width="500"
-    :height="800"
+    :width="'100%'"  
+    :height="'100%'" 
     :diffEditor="false"
     :original="original"
     v-model:value="activeObjectsStore.form.axo_code"
+    class="code-editor"
   ></MonacoEditor>
 </template>
 
@@ -25,9 +26,8 @@ const code = ref(`from axo import Axo, axo_method
 
 </script>
 <style scoped>
-.code-area{
-    background-color: #f2f2f2ff ;
-    max-width: 750px;
-    height: 450px;
+.code-editor {
+  width: 90% !important;
+  height: 65vh !important; /* ocupa 75% de la altura visible */
 }
 </style>
