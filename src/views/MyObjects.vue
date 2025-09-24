@@ -27,6 +27,7 @@
             :title="` ${ao.axo_alias} (${ao.axo_module})`"
             :description="`Class: ${ao.axo_class_name} | Version: ${ao.axo_version} | Dependencies: ${ao.axo_dependencies.join(', ')}`"
             :autor="ao.created_at"
+            :image="OA"
           >
             <template #button>
               <v-btn small class="btn-edit" @click="handleEdit(ao)">
@@ -70,6 +71,8 @@ import CardVariant from "@/components/CardVariant.vue"
 import { useActiveObjectsStore } from "@/store/active_objects"
 import { ref, onMounted, computed } from "vue"
 import router from "@/router"
+import OA from "@/assets/axo_OA_assets.png"
+
 
 const activeObjectsStore = useActiveObjectsStore()
 const currentSearch = ref("")
