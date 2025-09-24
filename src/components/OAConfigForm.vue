@@ -7,7 +7,7 @@
       </v-avatar>
       <div>
         <h2 class="text-h6 font-weight-bold mb-1">
-          Configuración del Objeto Activo
+          Active Object Configuration
         </h2>
         <span class="text-caption text-grey">
           {{ oa.data?.label || oa.label }}
