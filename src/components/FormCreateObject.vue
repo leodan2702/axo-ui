@@ -1,58 +1,210 @@
-<template >
-  <v-card
-    class=" d-flex flex-column pa-2"
-    max-width="344"
-  >
-    <v-form  
-    fast-fail 
-    @submit.prevent
+<template>
+  <v-card class="d-flex flex-column pa-6 elevation-5 rounded-lg" style="width: 100%; max-width: 800px;">
+    <v-card-title>{{ isEditing ? 'Edit Active Object' : 'Create a New Active Object' }}</v-card-title>
+    <v-card-subtitle class="mb-4">Fill in the fields below</v-card-subtitle>
+
+    <v-form
+      ref="formRef"
+      v-model="isValid"
+      fast-fail
+      @submit.prevent="save"
+      :lazy-validation="true"
     >
+      <!-- Module -->
+      <!-- <v-text-field
+        v-model="activeObjectsStore.form.axo_module"
+        label="Module"
+        variant="filled"
+        :rules="[rules.required]"
+        required
+        prepend-inner-icon="mdi-cube-outline"
+      /> -->
+
+      <!-- Class Name -->
+      <!-- <v-text-field
+        v-model="activeObjectsStore.form.axo_class_name"
+        label="Class Name"
+        variant="filled"
+        :rules="[rules.required]"
+        required
+        prepend-inner-icon="mdi-file-document-outline"
+      /> -->
+
+      <!-- Alias -->
       <v-text-field
-        v-model="class_name"
-        label="Class name"
-        variant="filled"       
-      ></v-text-field>
+        v-model="activeObjectsStore.form.axo_alias"
+        label="Alias"
+        variant="filled"
+        prepend-inner-icon="mdi-tag"
+      />
+      <!-- Endpoint asociado -->
+      <v-select
+        v-model="activeObjectsStore.form.axo_endpoint_id"
+        :items="availableEndpoints"
+        item-title="name"
+        item-value="endpoint_id"
+        label="Endpoint"
+        variant="filled"
+        prepend-inner-icon="mdi-cube-outline"
+      />
+
+      <!-- Read Only -->
+      <!-- <v-switch
+        v-model="activeObjectsStore.form.axo_is_read_only"
+        label="Read Only"
+      /> -->
+
+      <!-- Version editable (sin spinner) -->
       <v-text-field
-        v-model="bucket_id"
-        label="Bucket id"
-        variant="filled"   
-      ></v-text-field>
-      <v-text-field
-        v-model="output_key"
-        label="Output Key"
-        variant="filled"   
-      ></v-text-field>
-      <v-text-field
-        v-model="attribute"
-        label="Attribute"
-        variant="filled"   
-      ></v-text-field>
-      <v-text-field
-        v-model="another_attribute"
-        label="Another Attribute"
-        variant="filled"   
-      ></v-text-field>
-      <v-btn
-          :loading="loading"
-          color="#11222eff"
-          size="large"
-          type="submit"
-          variant="elevated"
-          block
-        >
-          Save
-        </v-btn>
-    </v-form>
+        v-model="activeObjectsStore.form.axo_version"
+        label="Version"
+        variant="filled"
+        prepend-inner-icon="mdi-numeric"
+        :rules="[rules.required, rules.numeric]"
+        required
+        type="text"
+      />
+
+
+      <!-- URI -->
+      <!-- <v-text-field
+        v-model="activeObjectsStore.form.axo_uri"
+        label="URI"
+        variant="filled"
+        prepend-inner-icon="mdi-link-variant"
+      /> -->
+
+      <!-- Dependencias -->
+      <!-- Dependencias -->
+  <v-combobox
+    v-model="activeObjectsStore.form.axo_dependencies"
+    multiple
+    label="Dependencies"
+    variant="filled"
+    prepend-inner-icon="mdi-package-variant"
+    placeholder="Add dependencies one by one"
+    chips
+    clearable
+  />
+
+  <!-- Validación oculta del código -->
+  <v-textarea
+    v-model="activeObjectsStore.form.axo_code"
+    label="Code"
+    variant="filled"
+    :rules="[rules.codeRequired]"
+    required
+    style="display: none"
+  />
+
+  <!-- Botón Guardar -->
+  <div class="d-flex mt-4">
+    <v-btn
+      :loading="activeObjectsStore.loading"
+      color="#11222eff"
+      size="large"
+      type="submit"
+      variant="elevated"
+      block
+      :disabled="!isValid"
+    >
+      {{ isEditing ? 'Update' : 'Persistency' }}
+    </v-btn>
+  </div>
+</v-form>
+    <!-- Snackbar -->
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      timeout="3000"
+      location="bottom center"
+    >
+      {{ snackbar.text }}
+      <template #actions>
+        <v-btn color="white" variant="text" @click="snackbar.show = false">Close</v-btn>
+      </template>
+    </v-snackbar>
+
+    <v-divider class="my-4"></v-divider>
   </v-card>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute } from 'vue-router'
+import { useActiveObjectsStore } from '@/store/active_objects'
+import { useEndpointsStore } from '@/store/endpoints'
 
-const class_name = ref('')
-const bucket_id = ref('')
-const output_key = ref('')
-const attribute = ref('')
-const another_attribute = ref('')
+const activeObjectsStore = useActiveObjectsStore()
+const endpointsStore = useEndpointsStore()
 
+const availableEndpoints = ref([])
+const isValid = ref(false)
+const formRef = ref(null)
+const isEditing = ref(false)
+
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const rules = {
+  required: v => !!v || 'Field required',
+  numeric: v => !isNaN(v) || 'Must be a number',
+  codeRequired: v => (v && v.trim().length > 0) || 'Code is required'
+}
+
+const route = useRoute()
+
+// --- Cargar formulario ---
+const loadForm = (editQuery) => {
+  if (editQuery) {
+    isEditing.value = true
+    const aoToEdit = activeObjectsStore.activeObjects.find(e => e.active_object_id === editQuery)
+    if (aoToEdit) activeObjectsStore.form = { ...aoToEdit }
+  } else {
+    isEditing.value = false
+    activeObjectsStore.resetForm()
+    formRef.value.resetValidation()
+    isValid.value = false
+  }
+}
+
+// --- Al montar ---
+onMounted(async () => {
+  await endpointsStore.get_endpoints()
+  availableEndpoints.value = endpointsStore.endpoints.map(e => ({ name: e.name, endpoint_id: e.endpoint_id }))
+  loadForm(route.query.edit)
+})
+
+// --- Guardar ---
+const save = async () => {
+  let result
+  if (isEditing.value) {
+    result = await activeObjectsStore.updateActiveObject(route.query.edit)
+  } else {
+    result = await activeObjectsStore.createActiveObject()
+  }
+
+  if (result.color === 'success') {
+    snackbar.value = {
+      show: true,
+      text: isEditing.value
+        ? `Active Object updated successfully: ${result.data.axo_class_name}`
+        : `Active Object created successfully: ${result.data.axo_class_name}`,
+      color: 'success'
+    }
+
+    formRef.value.resetValidation()
+    if (!isEditing.value) {
+      isValid.value = false
+      activeObjectsStore.resetForm()
+    }
+  } else {
+    snackbar.value = { show: true, text: 'Error: ' + result.message, color: 'error' }
+  }
+}
+
+// --- Al desmontar ---
+onBeforeUnmount(() => {
+  activeObjectsStore.resetForm()
+  formRef.value.resetValidation()
+  isValid.value = false
+})
 </script>

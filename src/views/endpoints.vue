@@ -27,6 +27,7 @@
             :title="`Endpoint: ${ep.name}`"
             :description="`Image: ${ep.image} | CPU: ${ep.resources.cpu} | RAM: ${ep.resources.ram}`"
             :autor="ep.created_at"
+            :image="endpoint"
           >
             <template #button>
               <v-btn small class="btn-edit" @click="handleEdit(ep)">
@@ -70,6 +71,7 @@ import CardVariant from "@/components/CardVariant.vue"
 import { useEndpointsStore } from "@/store/endpoints"
 import { ref, onMounted, computed } from "vue"
 import router from "@/router"
+import endpoint from "@/assets/axo_endpoint_assets.png"
 
 const endpointsStore = useEndpointsStore()
 const currentSearch = ref("")

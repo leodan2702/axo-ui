@@ -26,6 +26,7 @@
             :key="service.service_id"
             :title="`Service: ${service.name}`"
             :description="`CPU: ${service.resources.cpu} | RAM: ${service.resources.ram}`"
+            :image="serv"
           >
             <template #button>
               <v-btn small class="btn-edit" @click="handleEdit(service)">
@@ -69,7 +70,7 @@ import CardVariant from "@/components/CardVariant.vue"
 import { useServicesStore } from "@/store/services"
 import { ref, onMounted, computed } from "vue"
 import router from "@/router"
-
+import serv from "@/assets/axo_service_assets.png"
 const servicesStore = useServicesStore()
 const currentSearch = ref("")
 

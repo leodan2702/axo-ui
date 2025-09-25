@@ -59,7 +59,7 @@
 
       <!-- Security Policy (sp_id) -->
       <v-select
-        v-model="selectedSpId"
+        v-model="endpointsStore.form.sp_id"
         :items="availablePolicies"
         item-title="name"
         item-value="sp_id"
@@ -133,10 +133,6 @@ const rules = {
 
 const route = useRoute()
 
-// --- Sincronizar selectedSpId con form.security_policy ---
-watch(selectedSpId, (newSpId) => {
-  endpointsStore.form.security_policy = newSpId
-})
 
 // --- Cargar formulario ---
 const loadForm = (editQuery) => {
@@ -150,7 +146,6 @@ const loadForm = (editQuery) => {
   } else {
     isEditing.value = false
     endpointsStore.resetForm()
-    selectedSpId.value = ''
     formRef.value.resetValidation()
     isValid.value = false
   }

@@ -1,7 +1,9 @@
 <template>
   <div class="side-panel">
-    <h3 class="title">Binding Objects</h3>
-
+    <div class="title-row">
+      <h3 class="title">Binding Objects</h3>
+      <span class="counter">{{ objects.length }}</span>
+    </div>
     <!-- Lista con scroll -->
     <div class="objects-list">
       <div
@@ -13,7 +15,7 @@
       >
         <img v-if="obj.icon" :src="obj.icon" class="palette-icon" />
         <span v-else>⚙️</span>
-        {{ obj.class_name }}
+        {{ obj.label }}
       </div>
     </div>
   </div>
@@ -21,15 +23,16 @@
 
 <script setup>
 
-
-
-defineProps({
-    objects: { type: Array, required: true }
+const props = defineProps({
+  objects: {
+    type: Array,
+    required: true
+  }
 })
 
 const onDragStart = (event, obj) => {
-    event.dataTransfer.setData("application/vueflow", JSON.stringify(obj))
-    event.dataTransfer.effectAllowed = "move"
+  event.dataTransfer.setData("application/vueflow", JSON.stringify(obj))
+  event.dataTransfer.effectAllowed = "move"
 }
 </script>
 
@@ -81,5 +84,25 @@ const onDragStart = (event, obj) => {
     object-fit: contain;
 }
 
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-weight: bold;
+  margin: 0;
+}
+
+.counter {
+  background: #3b82f6; /* azul */
+  color: white;
+  font-size: 0.9rem;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
 
 </style>

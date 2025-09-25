@@ -27,6 +27,7 @@
             :title="`Policy: ${policy.name}`"
             :description="`Roles: ${policy.roles.name} | Requires Auth: ${policy.requires_authentication}`"
             :autor="policy.created_at"
+            :image="sp"
           >
             <template #button>
               <!-- Botón Editar -->
@@ -72,6 +73,7 @@ import CardVariant from "@/components/CardVariant.vue"
 import { useSecurityPoliciesStore } from "@/store/security_policy"
 import { ref, onMounted, computed } from "vue"
 import router from "@/router"
+import sp from "@/assets/axo_securityPolices_assets.png"
 
 const policiesStore = useSecurityPoliciesStore()
 const currentSearch = ref("")
