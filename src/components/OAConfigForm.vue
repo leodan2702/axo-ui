@@ -45,7 +45,7 @@
         </v-card>
       </div>
 
-      <!-- Métodos -->
+      <!-- Methods -->
       <div
         v-for="(params, method) in form.methods"
         :key="method"
@@ -54,7 +54,7 @@
         <v-card class="pa-4 rounded-lg outlined">
           <h3 class="text-subtitle-1 font-weight-medium mb-3">
             <v-icon size="18" class="mr-2">mdi-function-variant</v-icon>
-            Método: {{ method }}()
+            Method: {{ method }}()
           </h3>
           <v-row dense>
             <v-col
@@ -88,7 +88,7 @@
         @click="$emit('close')"
       >
         <v-icon start>mdi-close</v-icon>
-        Cancelar
+        Cancel
       </v-btn>
 
       <v-btn
@@ -97,7 +97,7 @@
         @click="saveConfig"
       >
         <v-icon start>mdi-content-save</v-icon>
-        Guardar
+        Save
       </v-btn>
     </v-card-actions>
   </v-card>

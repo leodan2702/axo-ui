@@ -14,7 +14,7 @@
 
           <button class="btn primary" @click="reconfigureSelected">
             <img :src="OA" alt="configure" class="btn-icon" />
-            Configure Object
+             Edit Selection
           </button>
 
           <button class="btn primary" @click="clearGraph">
