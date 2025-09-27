@@ -1,11 +1,13 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import { useServicesStore } from "./services";
 
 const CRYPTOMESH_URL = `http://localhost:19000`;
 const CRYPTOMESH_API_VERSION = `v1`;
 
 export const useMicroservicesStore = defineStore("microservices", () => {
   const microservices = ref([]);
+  const servicesStore = useServicesStore();
 
   // -------------- Formulario -----------------
   const form = ref({
@@ -51,7 +53,20 @@ export const useMicroservicesStore = defineStore("microservices", () => {
       });
       if (!response.ok) throw new Error("Failed to create microservice");
       const createdMicroservice = await response.json();
-      microservices.value.push(createdMicroservice); // agregamos al store
+
+      // Actualizar store local del service padre
+      const serviceIndex = servicesStore.services.findIndex(
+        s => s.service_id === createdMicroservice.service_id
+      );
+      if (serviceIndex !== -1) {
+        const service = servicesStore.services[serviceIndex];
+        if (!service.microservices.includes(createdMicroservice.microservice_id)) {
+          service.microservices.push(createdMicroservice.microservice_id);
+          servicesStore.services[serviceIndex] = { ...service };
+        }
+      }
+
+      microservices.value.push(createdMicroservice);
       resetForm();
       return { color: "success", data: createdMicroservice };
     } catch (error) {
@@ -63,33 +78,53 @@ export const useMicroservicesStore = defineStore("microservices", () => {
     }
   }
 
-  // Actualizar microservice existente
-  async function update_microservice(microservice_id) {
-    loading.value = true;
-    try {
-      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/microservices/${microservice_id}/`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form.value)
-      });
-      if (!response.ok) throw new Error("Failed to update microservice");
-      const updatedMicroservice = await response.json();
+async function update_microservice(microservice_id) {
+  loading.value = true;
+  try {
+    // 1Encontrar microservicio
+    const original = microservices.value.find(m => m.microservice_id === microservice_id);
+    const oldServiceId = original?.service_id;
 
-      // Actualizar en el store local
-      const index = microservices.value.findIndex(m => m.microservice_id === microservice_id);
-      if (index !== -1) {
-        microservices.value[index] = updatedMicroservice;
+    //Actualizar en el backend
+    const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/microservices/${microservice_id}/`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form.value)
+    });
+    if (!response.ok) throw new Error("Failed to update microservice");
+    const updatedMicroservice = await response.json();
+
+    //Actualizar store de microservices
+    const index = microservices.value.findIndex(m => m.microservice_id === microservice_id);
+    if (index !== -1) microservices.value[index] = updatedMicroservice;
+
+    //Actualizar servicesStore si cambió de service
+    const newServiceId = updatedMicroservice.service_id;
+    if (oldServiceId && oldServiceId !== newServiceId) {
+      // Quitar del service antiguo
+      const oldServiceIndex = servicesStore.services.findIndex(s => s.service_id === oldServiceId);
+      if (oldServiceIndex !== -1) {
+        servicesStore.services[oldServiceIndex].microservices =
+          servicesStore.services[oldServiceIndex].microservices.filter(id => id !== microservice_id);
       }
 
-      return { color: "success", data: updatedMicroservice };
-    } catch (error) {
-      console.error("Error", error);
-      const message = error?.message ?? "Unknown error, please contact support@axo.mx";
-      return { color: "error", message };
-    } finally {
-      loading.value = false;
+      //Agregar al service nuevo
+      const newServiceIndex = servicesStore.services.findIndex(s => s.service_id === newServiceId);
+      if (newServiceIndex !== -1 && !servicesStore.services[newServiceIndex].microservices.includes(microservice_id)) {
+        servicesStore.services[newServiceIndex].microservices.push(microservice_id);
+      }
     }
+
+    return { color: "success", data: updatedMicroservice };
+  } catch (error) {
+    console.error("Error", error);
+    const message = error?.message ?? "Unknown error, please contact support@axo.mx";
+    return { color: "error", message };
+  } finally {
+    loading.value = false;
   }
+}
+
 
   // Eliminar un microservice
   async function delete_microservice(microservice_id) {
@@ -99,8 +134,15 @@ export const useMicroservicesStore = defineStore("microservices", () => {
       });
       if (!response.ok) throw new Error("Failed to delete microservice");
 
-      // Eliminarlo del store local
+      // Eliminar del store
       microservices.value = microservices.value.filter(m => m.microservice_id !== microservice_id);
+
+      // Actulizar store local del service
+      for (const service of servicesStore.services) {
+        if (service.microservices.includes(microservice_id)) {
+          service.microservices = service.microservices.filter(id => id !== microservice_id);
+        }
+      }
 
       return { color: "success" };
     } catch (error) {

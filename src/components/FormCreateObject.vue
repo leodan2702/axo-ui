@@ -29,6 +29,18 @@
         prepend-inner-icon="mdi-cube-outline"
       />
 
+      <!-- Servicio (guía) -->
+      <v-select
+        v-model="selectedService"
+        :items="servicesStore.services"
+        item-title="name"
+        item-value="service_id"
+        label="Service"
+        variant="filled"
+        prepend-inner-icon="mdi-cube-outline"
+        @update:model-value="onServiceChange"
+      />
+
       <!-- Microservice -->
       <v-select
         v-model="selectedMicroservice"
@@ -39,15 +51,6 @@
         variant="filled"
         prepend-inner-icon="mdi-cogs"
         @update:model-value="onMicroserviceChange"
-      />
-
-      <!-- Servicio asociado-->
-      <v-text-field
-        v-model="selectedServiceName"
-        label="Service"
-        variant="filled"
-        prepend-inner-icon="mdi-cube-outline"
-        readonly
       />
 
       <!-- Version editable -->
@@ -130,9 +133,10 @@ const microservicesStore = useMicroservicesStore()
 const servicesStore = useServicesStore()
 
 const availableEndpoints = ref([])
-const microservices = ref([]) // Lista de microservices con name + service_name
-const selectedMicroservice = ref(null)
+const microservices = ref([]) // Microservices filtrados por service
+const selectedService = ref(null)
 const selectedServiceName = ref('')
+const selectedMicroservice = ref(null)
 
 const isValid = ref(false)
 const formRef = ref(null)
@@ -154,10 +158,23 @@ const loadForm = (editQuery) => {
     const aoToEdit = activeObjectsStore.activeObjects.find(e => e.active_object_id === editQuery)
     if (aoToEdit) {
       activeObjectsStore.form = { ...aoToEdit }
-      // Usar el campo correcto del backend: axo_microservice_id
       selectedMicroservice.value = aoToEdit.axo_microservice_id
-      const ms = microservices.value.find(m => m.microservice_id === aoToEdit.axo_microservice_id)
-      selectedServiceName.value = ms ? ms.service_name : ''
+
+      // Asignar service correspondiente
+      const ms = microservicesStore.microservices.find(m => m.microservice_id === aoToEdit.axo_microservice_id)
+      selectedService.value = ms ? ms.service_id : null
+      selectedServiceName.value = ms ? servicesStore.services.find(s => s.service_id === ms.service_id)?.name || '' : ''
+
+      // Filtrar microservices del service
+      if (selectedService.value) {
+        microservices.value = microservicesStore.microservices
+          .filter(m => m.service_id === selectedService.value)
+          .map(m => ({
+            microservice_id: m.microservice_id,
+            name: m.name,
+            service_name: servicesStore.services.find(s => s.service_id === m.service_id)?.name || ''
+          }))
+      }
     }
   } else {
     isEditing.value = false
@@ -165,6 +182,7 @@ const loadForm = (editQuery) => {
     formRef.value.resetValidation()
     isValid.value = false
     selectedMicroservice.value = null
+    selectedService.value = null
     selectedServiceName.value = ''
   }
 }
@@ -174,16 +192,15 @@ onMounted(async () => {
   await endpointsStore.get_endpoints()
   availableEndpoints.value = endpointsStore.endpoints.map(e => ({ name: e.name, endpoint_id: e.endpoint_id }))
 
-  // Cargar servicios y microservices
   await servicesStore.get_services()
   await microservicesStore.get_microservices()
 
-  // Mapear microservices agregando service_name
+  // Inicialmente todos los microservices
   microservices.value = microservicesStore.microservices.map(ms => {
     const svc = servicesStore.services.find(s => s.service_id === ms.service_id)
     return {
       microservice_id: ms.microservice_id,
-      name: ms.name, // mostrar solo nombre del microservice
+      name: ms.name,
       service_name: svc ? svc.name : ''
     }
   })
@@ -191,12 +208,33 @@ onMounted(async () => {
   loadForm(route.query.edit)
 })
 
+// --- Cambiar service seleccionado ---
+const onServiceChange = (serviceId) => {
+  selectedService.value = serviceId
+
+  // Filtrar microservices
+  const filteredMS = microservicesStore.microservices.filter(ms => ms.service_id === serviceId)
+  microservices.value = filteredMS.map(ms => ({
+    microservice_id: ms.microservice_id,
+    name: ms.name,
+    service_name: servicesStore.services.find(s => s.service_id === ms.service_id)?.name || ''
+  }))
+
+  // Limpiar microservice si no pertenece al service
+  if (!microservices.value.find(m => m.microservice_id === selectedMicroservice.value)) {
+    selectedMicroservice.value = null
+    activeObjectsStore.form.axo_microservice_id = null
+  }
+
+  const svc = servicesStore.services.find(s => s.service_id === serviceId)
+  selectedServiceName.value = svc ? svc.name : ''
+}
+
 // --- Cambiar microservice seleccionado ---
 const onMicroserviceChange = (msId) => {
   const ms = microservices.value.find(m => m.microservice_id === msId)
   if (ms) {
     selectedServiceName.value = ms.service_name
-    // Guardar en el campo correcto del backend
     activeObjectsStore.form.axo_microservice_id = ms.microservice_id
   } else {
     selectedServiceName.value = ''
@@ -226,8 +264,9 @@ const save = async () => {
     if (!isEditing.value) {
       isValid.value = false
       activeObjectsStore.resetForm()
-      selectedMicroservice.value = null
+      selectedService.value = null
       selectedServiceName.value = ''
+      selectedMicroservice.value = null
     }
   } else {
     snackbar.value = { show: true, text: 'Error: ' + result.message, color: 'error' }
@@ -239,7 +278,8 @@ onBeforeUnmount(() => {
   activeObjectsStore.resetForm()
   formRef.value.resetValidation()
   isValid.value = false
-  selectedMicroservice.value = null
+  selectedService.value = null
   selectedServiceName.value = ''
+  selectedMicroservice.value = null
 })
 </script>
