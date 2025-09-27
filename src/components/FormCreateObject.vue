@@ -86,6 +86,7 @@
       <!-- Botón Guardar -->
       <div class="d-flex mt-4">
         <v-btn
+          data-step="persistency-button"
           :loading="activeObjectsStore.loading"
           color="#11222eff"
           size="large"

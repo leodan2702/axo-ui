@@ -8,19 +8,19 @@
 
           <!-- Botón New Endpoint -->
           <router-link to="/create-endpoint">
-            <v-btn class="btn-create-endpoint">
+            <v-btn class="btn-create-endpoint" data-step="new-endpoint-button">
               <v-icon left>mdi-plus</v-icon>
               New Endpoint
             </v-btn>
           </router-link>
 
           <!-- Barra de búsqueda -->
-          <SearchBar @update:search="handleSearch" class="ml-4" />
+          <SearchBar @update:search="handleSearch" class="ml-4" data-step="search-endpoint"/>
         </div>
 
         <v-divider></v-divider>
 
-        <div class="mt-5 pa-5">
+        <div class="mt-5 pa-5" data-step="endpoints-management-section">
           <CardVariant
             v-for="(ep, index) in filteredEndpoints"
             :key="ep.endpoint_id"
