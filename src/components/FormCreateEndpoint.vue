@@ -22,9 +22,10 @@
         prepend-inner-icon="mdi-api"
       />
 
-      <!-- Imagen --> 
-      <v-text-field
+      <!-- Imagen -->
+      <v-select
         v-model="endpointsStore.form.image"
+        :items="availableImages"
         label="Image"
         variant="filled"
         :rules="[rules.required]"
@@ -149,6 +150,10 @@ const loadForm = (editQuery) => {
   }
 }
 
+const availableImages = ref([
+  "nachocode/axo:endpoint-0.0.3a1"
+])
+
 // --- Al montar ---
 onMounted(async () => {
   await securityPoliciesStore.get_policies()
@@ -173,24 +178,25 @@ onBeforeUnmount(() => {
 
 // --- Guardar ---
 const save = async () => {
-  let result
+  let result;
   if (isEditing.value) {
-    result = await endpointsStore.update_endpoint(route.query.edit)
+    // Actualizar endpoint existente
+    result = await endpointsStore.update_endpoint(route.query.edit);
   } else {
-    result = await endpointsStore.create_endpoint()
+    // Crear y desplegar endpoint en un solo paso
+    result = await endpointsStore.deploy_endpoint();
   }
 
-  if (result.color === 'success') {
-    snackbar.value = {
-      show: true,
-      text: isEditing.value
-        ? `Endpoint updated successfully: ${result.data.name}`
-        : `Endpoint created successfully: ${result.data.name}`,
-      color: 'success'
-    }
+  snackbar.value = {
+    show: true,
+    text: result.color === "success"
+      ? `Endpoint deployed successfully: ${result.data.name}`
+      : `Error during deploy. Endpoint created: ${result.data?.name ?? ''}. ${result.message}`,
+    color: result.color === "success" ? "success" : "error"
+  };
 
-    formRef.value?.resetValidation()
-
+  if (result.color === "success" || result.data) {
+    formRef.value.resetValidation();
     if (!isEditing.value) {
       isValid.value = false
       endpointsStore.resetForm()
