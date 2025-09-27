@@ -57,9 +57,9 @@
         </v-col>
       </v-row>
 
-      <!-- Security Policy (sp_id) -->
+      <!-- Security Policy -->
       <v-select
-        v-model="endpointsStore.form.sp_id"
+        v-model="endpointsStore.form.security_policy"
         :items="availablePolicies"
         item-title="name"
         item-value="sp_id"
@@ -106,7 +106,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, onBeforeRouteUpdate } from 'vue-router'
 import { useEndpointsStore } from '@/store/endpoints'
 import { useSecurityPoliciesStore } from '@/store/security_policy'
@@ -114,7 +114,6 @@ import { useSecurityPoliciesStore } from '@/store/security_policy'
 const endpointsStore = useEndpointsStore()
 const securityPoliciesStore = useSecurityPoliciesStore()
 
-const selectedSpId = ref('')
 const availablePolicies = ref([])
 
 const isValid = ref(false)
@@ -133,7 +132,6 @@ const rules = {
 
 const route = useRoute()
 
-
 // --- Cargar formulario ---
 const loadForm = (editQuery) => {
   if (editQuery) {
@@ -141,12 +139,12 @@ const loadForm = (editQuery) => {
     const endpointToEdit = endpointsStore.endpoints.find(e => e.endpoint_id === editQuery)
     if (endpointToEdit) {
       endpointsStore.form = { ...endpointToEdit }
-      selectedSpId.value = endpointToEdit.security_policy || ''
+      endpointsStore.form.security_policy = endpointToEdit.security_policy || ''
     }
   } else {
     isEditing.value = false
     endpointsStore.resetForm()
-    formRef.value.resetValidation()
+    formRef.value?.resetValidation()
     isValid.value = false
   }
 }
@@ -169,8 +167,7 @@ onBeforeRouteUpdate((to) => {
 // --- Al desmontar ---
 onBeforeUnmount(() => {
   endpointsStore.resetForm()
-  selectedSpId.value = ''
-  formRef.value.resetValidation()
+  formRef.value?.resetValidation()
   isValid.value = false
 })
 
@@ -192,16 +189,14 @@ const save = async () => {
       color: 'success'
     }
 
-    formRef.value.resetValidation()
+    formRef.value?.resetValidation()
 
     if (!isEditing.value) {
       isValid.value = false
       endpointsStore.resetForm()
-      selectedSpId.value = ''
     }
   } else {
     snackbar.value = { show: true, text: 'Error: ' + result.message, color: 'error' }
   }
 }
 </script>
-
