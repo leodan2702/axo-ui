@@ -60,7 +60,11 @@ export const useMicroservicesStore = defineStore("microservices", () => {
       );
       if (serviceIndex !== -1) {
         const service = servicesStore.services[serviceIndex];
-        if (!service.microservices.includes(createdMicroservice.microservice_id)) {
+        if (!Array.isArray(service.microservices)) {
+          service.microservices = [];
+        }
+
+        if(!service.microservices.includes(createdMicroservice.microservice_id)){
           service.microservices.push(createdMicroservice.microservice_id);
           servicesStore.services[serviceIndex] = { ...service };
         }
@@ -104,14 +108,21 @@ async function update_microservice(microservice_id) {
       // Quitar del service antiguo
       const oldServiceIndex = servicesStore.services.findIndex(s => s.service_id === oldServiceId);
       if (oldServiceIndex !== -1) {
-        servicesStore.services[oldServiceIndex].microservices =
-          servicesStore.services[oldServiceIndex].microservices.filter(id => id !== microservice_id);
+        const oldService = servicesStore.services[oldServiceIndex];
+        if (!Array.isArray(oldService.microservices)) oldService.microservices = [];
+        oldService.microservices = oldService.microservices.filter(id => id !== microservice_id);
+        servicesStore.services[oldServiceIndex] = { ...oldService };
       }
 
-      //Agregar al service nuevo
+      // Agregar al service nuevo
       const newServiceIndex = servicesStore.services.findIndex(s => s.service_id === newServiceId);
-      if (newServiceIndex !== -1 && !servicesStore.services[newServiceIndex].microservices.includes(microservice_id)) {
-        servicesStore.services[newServiceIndex].microservices.push(microservice_id);
+      if (newServiceIndex !== -1) {
+        const newService = servicesStore.services[newServiceIndex];
+        if (!Array.isArray(newService.microservices)) newService.microservices = [];
+        if (!newService.microservices.includes(microservice_id)) {
+          newService.microservices.push(microservice_id);
+          servicesStore.services[newServiceIndex] = { ...newService };
+        }
       }
     }
 
@@ -126,7 +137,7 @@ async function update_microservice(microservice_id) {
 }
 
 
-  // Eliminar un microservice
+// Eliminar un microservice
   async function delete_microservice(microservice_id) {
     try {
       const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/microservices/${microservice_id}/`, {
@@ -139,6 +150,9 @@ async function update_microservice(microservice_id) {
 
       // Actulizar store local del service
       for (const service of servicesStore.services) {
+        // Asegurarse de que microservices sea un array
+        if (!Array.isArray(service.microservices)) service.microservices = [];
+
         if (service.microservices.includes(microservice_id)) {
           service.microservices = service.microservices.filter(id => id !== microservice_id);
         }
