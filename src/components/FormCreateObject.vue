@@ -50,6 +50,7 @@
         label="Microservice"
         variant="filled"
         prepend-inner-icon="mdi-cogs"
+        :disabled="!selectedService || microservices.length === 0"
         @update:model-value="onMicroserviceChange"
       />
 
@@ -226,9 +227,6 @@ const onServiceChange = (serviceId) => {
     selectedMicroservice.value = null
     activeObjectsStore.form.axo_microservice_id = null
   }
-
-  const svc = servicesStore.services.find(s => s.service_id === serviceId)
-  selectedServiceName.value = svc ? svc.name : ''
 }
 
 // --- Cambiar microservice seleccionado ---
