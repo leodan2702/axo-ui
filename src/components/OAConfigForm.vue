@@ -26,15 +26,12 @@
             Constructor (__init__)
           </h3>
           <v-row dense>
-            <v-col
-              v-for="(value, param) in form.init"
-              :key="param"
-              cols="12"
-              md="6"
-            >
+            <v-col v-for="param in schema.init_params" :key="param.name" cols="12" md="6">
               <v-text-field
-                v-model="form.init[param]"
-                :label="param"
+                v-model="form.init[param.name]"
+                :label="`${param.name} (${param.type || 'any'})`"
+                :hint="param.description || ''"
+                persistent-hint
                 variant="outlined"
                 density="comfortable"
                 clearable
@@ -45,36 +42,27 @@
         </v-card>
       </div>
 
-      <!-- Methods -->
-      <div
-        v-for="(params, method) in form.methods"
-        :key="method"
-        class="mb-6"
-      >
-        <v-card class="pa-4 rounded-lg outlined">
-          <h3 class="text-subtitle-1 font-weight-medium mb-3">
-            <v-icon size="18" class="mr-2">mdi-function-variant</v-icon>
-            Method: {{ method }}()
-          </h3>
-          <v-row dense>
-            <v-col
-              v-for="(value, param) in params"
-              :key="param"
-              cols="12"
-              md="6"
-            >
-              <v-text-field
-                v-model="form.methods[method][param]"
-                :label="param"
-                variant="outlined"
-                density="comfortable"
-                clearable
-                prepend-inner-icon="mdi-code-braces"
-              />
-            </v-col>
-          </v-row>
-        </v-card>
-      </div>
+      <!-- Método seleccionado -->
+      <v-card class="pa-4 rounded-lg outlined">
+        <h3 class="text-subtitle-1 font-weight-medium mb-3">
+          <v-icon size="18" class="mr-2">mdi-function-variant</v-icon>
+          Method: {{ oa.originData.method }}()
+        </h3>
+        <v-row dense>
+          <v-col v-for="param in schema.call_params" :key="param.name" cols="12" md="6">
+            <v-text-field
+              v-model="form.params[param.name]"
+              :label="`${param.name} (${param.type || 'any'})`"
+              :hint="param.description || ''"
+              persistent-hint
+              variant="outlined"
+              density="comfortable"
+              clearable
+              prepend-inner-icon="mdi-code-braces"
+            />
+          </v-col>
+        </v-row>
+      </v-card>
     </v-card-text>
 
     <v-divider></v-divider>
@@ -108,24 +96,28 @@ import { reactive, watch } from "vue"
 
 const props = defineProps({
   oa: { type: Object, required: true },
-  schema: { type: Object, required: true },
+  schema: { type: Object, required: true }, // schema = { init_params: [...], call_params: [...] }
 })
 
 const emit = defineEmits(["save", "close"])
 
-const form = reactive({ init: {}, methods: {} })
+const form = reactive({ init: {}, params: {} })
 
 watch(
   () => props.schema,
   (schema) => {
     if (!schema) return
-    form.init = {}
-    schema.init?.forEach((p) => (form.init[p] = ""))
 
-    form.methods = {}
-    Object.entries(schema.methods || {}).forEach(([method, params]) => {
-      form.methods[method] = {}
-      params.forEach((p) => (form.methods[method][p] = ""))
+    // Constructor (__init__)
+    form.init = {}
+    schema.init_params?.forEach((p) => {
+      form.init[p.name] = p.default ?? ""
+    })
+
+    // Método (call_params)
+    form.params = {}
+    schema.call_params?.forEach((p) => {
+      form.params[p.name] = p.default ?? ""
     })
   },
   { immediate: true }
@@ -134,6 +126,7 @@ watch(
 const saveConfig = () => {
   emit("save", {
     oaId: props.oa.originData.active_object_id,
+    method: props.oa.originData.method,
     config: JSON.parse(JSON.stringify(form)),
   })
 }
@@ -141,12 +134,12 @@ const saveConfig = () => {
 
 <style>
 .scrollable-content {
-  max-height: 80%; /* ajusta según prefieras */
+  max-height: 80%;
   overflow-y: auto;
   padding-right: 8px;
 }
 
-/* Scroll discreto en navegadores basados en WebKit (Chrome, Edge, Safari) */
+/* Scroll discreto en navegadores WebKit */
 .scrollable-content::-webkit-scrollbar {
   width: 6px;
 }

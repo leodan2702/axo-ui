@@ -2,7 +2,7 @@
   <v-main class="d-flex flex-column pa-0 ma-0">
     <v-container fluid class="pa-0 ma-0 d-flex h-100">
       <!-- Side panel -->
-      <SidePanel :objects="availableObjects" />
+      <SidePanel :objects="hierarchyStore.treeData" />
 
       <div class="graph-container">
         <!-- Toolbar -->
@@ -26,7 +26,7 @@
             <img :src="del" alt="delete" class="btn-icon" /> Remove Selection
           </button>
 
-          <button class="btn primary">
+          <button class="btn primary" @click="exportAndSend">
             <img :src="iconrun" alt="iconrun" class="btn-icon" />
             Run Choreography
           </button>
@@ -74,12 +74,23 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watchEffect } from "vue"
+import { ref, onMounted, onBeforeUnmount } from "vue"
 import { VueFlow, useVueFlow } from "@vue-flow/core"
-import { useActiveObjectsStore } from "@/store/active_objects"
+import { useHierarchyStore } from "@/store/HierarchyStore"
+
+const hierarchyStore = useHierarchyStore()
+
+onMounted(async () => {
+  await hierarchyStore.fetchHierarchy()
+  window.addEventListener("keydown", onKeyDown)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener("keydown", onKeyDown)
+})
+
 import "@vue-flow/core/dist/style.css"
 import "@vue-flow/core/dist/theme-default.css"
-
+import yaml from "js-yaml"
 import OA from "@/assets/axo_OA_assets.png"
 import bucket from "@/assets/axo_bucket_assets.png"
 import clean from "@/assets/icons-clean.png"
@@ -89,74 +100,40 @@ import del from "@/assets/icons-delete.png"
 import SidePanel from "../components/SidePanel.vue"
 import CustomNode from "../components/CustomNode.vue"
 import OAConfigForm from "@/components/OAConfigForm.vue"
+import { useChoreographyStore } from "@/store/run_choreograpy"
 
 const nodeTypes = { custom: CustomNode }
 const { project } = useVueFlow({ id: "designer" })
-const activeObjectsStore = useActiveObjectsStore()
+const choreographyStore = useChoreographyStore()
 
 const snackbar = ref({ show: false, text: "", color: "error" })
 const selectedOA = ref(null)
 const schemaForSelected = ref(null)
 const showConfigDialog = ref(false)
 
-
-
 /* Cargar config de un OA */
-const openConfig = async (node) => {
+const openConfig = (node) => {
   selectedOA.value = node
-  const { color, data } = await activeObjectsStore.getActiveObjectSchema(
-    node.originData.active_object_id
-  )
-  if (color === "success") {
-    schemaForSelected.value = data
-    showConfigDialog.value = true
-    console.log("Schema cargado:", data)
+
+  // Sacar directamente los parámetros desde functionData
+  const fnData = node.originData.functionData
+  if (fnData) {
+    schemaForSelected.value = {
+      init_params: fnData.init_params || [],
+      call_params: fnData.call_params || [],
+    }
   } else {
-    snackbar.value = { show: true, text: "No se pudo cargar el esquema", color: "error" }
+    schemaForSelected.value = { init_params: [], call_params: [] }
   }
+
+  showConfigDialog.value = true
+  console.log("Schema cargado:", schemaForSelected.value)
 }
 
-/* Guardar config */
-const handleSaveConfig = (payload) => {
-  console.log("Config guardada", payload)
-  showConfigDialog.value = false
-  // Aquí guardas en MictlanX o lo que necesites
-}
-
-/* Objetos disponibles */
-const availableObjects = computed(() =>
-  activeObjectsStore.activeObjects.map((ao) => ({
-    id: ao.active_object_id,
-    label: ao.axo_alias || ao.axo_class_name,
-    class_name: ao.axo_class_name,
-    type: ao.axo_module,
-    alias: ao.axo_alias,
-    icon: OA,
-  }))
-)
 
 /* Estado del grafo */
 const nodes = ref([])
 const edges = ref([])
-
-/* Eventos globales */
-onMounted(async () => {
-  await activeObjectsStore.getActiveObjects()
-  window.addEventListener("keydown", onKeyDown)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener("keydown", onKeyDown)
-})
-
-const reconfigureSelected = async () => {
-  const selectedNode = nodes.value.find((n) => n.selected)
-  if (!selectedNode) {
-    snackbar.value = { show: true, text: "Select an object first", color: "error" }
-    return
-  }
-  await openConfig(selectedNode)
-}
 
 /* Crear bucket */
 const createBucket = () => {
@@ -178,6 +155,16 @@ const clearGraph = () => {
   nodes.value = []
   edges.value = []
 }
+
+const reconfigureSelected = async () => {
+  const selectedNode = nodes.value.find((n) => n.selected)
+  if (!selectedNode) {
+    snackbar.value = { show: true, text: "Select an object first", color: "error" }
+    return
+  }
+  openConfig(selectedNode)
+}
+
 
 /* Eliminar seleccionados */
 const deleteSelected = () => {
@@ -210,23 +197,69 @@ const onDrop = async (event) => {
   })
 
   const newNode = {
-    id: `${data.active_object_id || data.id}-${Date.now()}`,
+    id: `${data.active_object_id}-${data.method || Date.now()}`,
     type: "custom",
     position,
-    data: { label: data.alias || data.class_name, icon: data.icon },
+    data: { label: data.alias || data.class_name, method: data.method, icon: OA},
     selectable: true,
     draggable: true,
     connectable: true,
-    originData: {
-      ...data,
-      active_object_id: data.active_object_id || data.id,
-    },
+    originData: data
   }
 
   nodes.value.push(newNode)
 
-  if (newNode.originData.class_name !== "Bucket") {
-    await openConfig(newNode)
+  selectedOA.value = newNode
+  await openConfig(newNode)
+}
+
+/* Exportar coreografía */
+const buildChoreographyJson = () => {
+  const triggers = nodes.value
+    .filter((node) => node.originData.class_name !== "Bucket")
+    .map((node) => {
+      const method = node.originData.method || "run"
+      const alias = `${node.originData.alias || node.originData.class_name}.${method}`
+
+      return {
+        name: node.data.label.replace(/\s+/g, ""),
+        rule: {
+          target: { alias },
+          parameters: {}
+        }
+      }
+    })
+
+  edges.value.forEach((edge) => {
+    const sourceNode = nodes.value.find((n) => n.id === edge.source)
+    const targetNode = nodes.value.find((n) => n.id === edge.target)
+    if (sourceNode && targetNode && sourceNode.originData.class_name !== "Bucket" && targetNode.originData.class_name !== "Bucket") {
+      const targetTrigger = triggers.find((t) => t.name === targetNode.data.label.replace(/\s+/g, ""))
+      if (targetTrigger) {
+        if (targetTrigger.depends_on) {
+          targetTrigger.depends_on = [].concat(targetTrigger.depends_on, sourceNode.data.label.replace(/\s+/g, ""))
+        } else {
+          targetTrigger.depends_on = sourceNode.data.label.replace(/\s+/g, "")
+        }
+      }
+    }
+  })
+
+  return {
+    format: "yaml",
+    content: yaml.dump({ triggers })
+  }
+}
+
+const exportAndSend = async () => {
+  const choreographyJson = buildChoreographyJson()
+  const { color, data, message } = await choreographyStore.interpretChoreography(choreographyJson)
+
+  if (color === "success") {
+    snackbar.value = { show: true, text: "Choreography sent to ShieldX", color }
+    console.log("Interpretation result:", data)
+  } else {
+    snackbar.value = { show: true, text: message, color }
   }
 }
 
@@ -255,6 +288,7 @@ const onConnect = (params) => {
   })
 }
 </script>
+
 
 
 <style>

@@ -5,8 +5,10 @@
     <span v-else class="fallback">⚙️</span>
 
     <!-- Nombre (opcional) -->
-    <div class="node-label">{{ data.label }}</div>
-
+    <div class="node-label">
+      {{ data.label }}
+      <span v-if="data.method" class="node-method">.{{ data.method }}()</span>
+    </div>
     <!-- Handles de conexión -->
     <Handle style="background:#3b82f6" type="target" :position="Position.Left" />
     <Handle style="background:#3b82f6" type="source" :position="Position.Right" />
