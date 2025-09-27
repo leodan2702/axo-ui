@@ -18,64 +18,54 @@
     <v-divider></v-divider>
 
     <v-card-text class="pt-4">
-      <!-- Constructor -->
-      <div v-if="Object.keys(form.init).length">
-        <v-card class="mb-6 pa-4 rounded-lg outlined">
-          <h3 class="text-subtitle-1 font-weight-medium mb-3">
-            <v-icon size="18" class="mr-2">mdi-cog-outline</v-icon>
-            Constructor (__init__)
-          </h3>
-          <v-row dense>
-            <v-col
-              v-for="(value, param) in form.init"
-              :key="param"
-              cols="12"
-              md="6"
-            >
-              <v-text-field
-                v-model="form.init[param]"
-                :label="param"
-                variant="outlined"
-                density="comfortable"
-                clearable
-                prepend-inner-icon="mdi-tune"
-              />
-            </v-col>
-          </v-row>
-        </v-card>
-      </div>
+  <!-- Constructor -->
+  <div v-if="Object.keys(form.init).length">
+    <v-card class="mb-6 pa-4 rounded-lg outlined">
+      <h3 class="text-subtitle-1 font-weight-medium mb-3">
+        <v-icon size="18" class="mr-2">mdi-cog-outline</v-icon>
+        Constructor (__init__)
+      </h3>
+      <v-row dense>
+        <v-col v-for="(value, param) in form.init" :key="param" cols="12" md="6">
+          <v-text-field
+            v-model="form.init[param]"
+            :label="param"
+            variant="outlined"
+            density="comfortable"
+            clearable
+            prepend-inner-icon="mdi-tune"
+          />
+        </v-col>
+      </v-row>
+    </v-card>
+  </div>
 
-      <!-- Methods -->
-      <div
-        v-for="(params, method) in form.methods"
-        :key="method"
-        class="mb-6"
+  <!-- Método seleccionado -->
+  <v-card class="pa-4 rounded-lg outlined">
+    <h3 class="text-subtitle-1 font-weight-medium mb-3">
+      <v-icon size="18" class="mr-2">mdi-function-variant</v-icon>
+      Method: {{ oa.originData.method }}()
+    </h3>
+    <v-row dense>
+      <v-col
+        v-for="(value, param) in form.params"
+        :key="param"
+        cols="12"
+        md="6"
       >
-        <v-card class="pa-4 rounded-lg outlined">
-          <h3 class="text-subtitle-1 font-weight-medium mb-3">
-            <v-icon size="18" class="mr-2">mdi-function-variant</v-icon>
-            Method: {{ method }}()
-          </h3>
-          <v-row dense>
-            <v-col
-              v-for="(value, param) in params"
-              :key="param"
-              cols="12"
-              md="6"
-            >
-              <v-text-field
-                v-model="form.methods[method][param]"
-                :label="param"
-                variant="outlined"
-                density="comfortable"
-                clearable
-                prepend-inner-icon="mdi-code-braces"
-              />
-            </v-col>
-          </v-row>
-        </v-card>
-      </div>
-    </v-card-text>
+        <v-text-field
+          v-model="form.params[param]"
+          :label="param"
+          variant="outlined"
+          density="comfortable"
+          clearable
+          prepend-inner-icon="mdi-code-braces"
+        />
+      </v-col>
+    </v-row>
+  </v-card>
+</v-card-text>
+
 
     <v-divider></v-divider>
 
@@ -108,25 +98,25 @@ import { reactive, watch } from "vue"
 
 const props = defineProps({
   oa: { type: Object, required: true },
-  schema: { type: Object, required: true },
+  schema: { type: Object, required: true }, // ahora schema = { params: [...] }
 })
 
 const emit = defineEmits(["save", "close"])
 
-const form = reactive({ init: {}, methods: {} })
+const form = reactive({ init: {}, params: {} })
 
 watch(
   () => props.schema,
   (schema) => {
     if (!schema) return
+
+    // Constructor (si existe)
     form.init = {}
     schema.init?.forEach((p) => (form.init[p] = ""))
 
-    form.methods = {}
-    Object.entries(schema.methods || {}).forEach(([method, params]) => {
-      form.methods[method] = {}
-      params.forEach((p) => (form.methods[method][p] = ""))
-    })
+    // Solo los parámetros del método arrastrado
+    form.params = {}
+    ;(schema.params || []).forEach((p) => (form.params[p] = ""))
   },
   { immediate: true }
 )
@@ -134,10 +124,12 @@ watch(
 const saveConfig = () => {
   emit("save", {
     oaId: props.oa.originData.active_object_id,
+    method: props.oa.originData.method, // <- identificar el método
     config: JSON.parse(JSON.stringify(form)),
   })
 }
 </script>
+
 
 <style>
 .scrollable-content {

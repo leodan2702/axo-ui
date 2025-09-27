@@ -26,7 +26,7 @@
             <img :src="del" alt="delete" class="btn-icon" /> Remove Selection
           </button>
 
-          <button class="btn primary">
+          <button class="btn primary" @click="exportAndSend">
             <img :src="iconrun" alt="iconrun" class="btn-icon" />
             Run Choreography
           </button>
@@ -79,7 +79,7 @@ import { VueFlow, useVueFlow } from "@vue-flow/core"
 import { useActiveObjectsStore } from "@/store/active_objects"
 import "@vue-flow/core/dist/style.css"
 import "@vue-flow/core/dist/theme-default.css"
-
+import yaml from "js-yaml"
 import OA from "@/assets/axo_OA_assets.png"
 import bucket from "@/assets/axo_bucket_assets.png"
 import clean from "@/assets/icons-clean.png"
@@ -92,6 +92,9 @@ import OAConfigForm from "@/components/OAConfigForm.vue"
 
 const nodeTypes = { custom: CustomNode }
 const { project } = useVueFlow({ id: "designer" })
+import { useChoreographyStore } from "@/store/run_choreograpy"
+
+const choreographyStore = useChoreographyStore()
 const activeObjectsStore = useActiveObjectsStore()
 
 const snackbar = ref({ show: false, text: "", color: "error" })
@@ -104,17 +107,84 @@ const showConfigDialog = ref(false)
 /* Cargar config de un OA */
 const openConfig = async (node) => {
   selectedOA.value = node
+
   const { color, data } = await activeObjectsStore.getActiveObjectSchema(
     node.originData.active_object_id
   )
+
   if (color === "success") {
-    schemaForSelected.value = data
+    const method = node.originData.method
+
+    if (method) {
+      // Si el método existe en el schema del store, úsalo
+      if (data.methods && data.methods[method]) {
+        schemaForSelected.value = { params: data.methods[method] }
+      } else {
+        // fallback: usa lo que guardaste en originData
+        schemaForSelected.value = { params: node.originData.params || [] }
+      }
+    } else {
+      // bucket u objeto completo
+      schemaForSelected.value = data
+    }
+
     showConfigDialog.value = true
-    console.log("Schema cargado:", data)
+    console.log("Schema cargado:", schemaForSelected.value)
   } else {
-    snackbar.value = { show: true, text: "No se pudo cargar el esquema", color: "error" }
+    snackbar.value = {
+      show: true,
+      text: "The schema could not be loaded",
+      color: "error"
+    }
   }
 }
+
+const buildChoreographyJson = () => {
+  const triggers = nodes.value
+    .filter((node) => node.originData.class_name !== "Bucket") // excluir Buckets
+    .map((node) => {
+      const method = node.originData.method || "run"
+      const alias = `${node.originData.alias || node.originData.class_name}.${method}`
+
+      return {
+        name: node.data.label.replace(/\s+/g, ""),
+        rule: {
+          target: { alias },
+          parameters: {}
+        }
+      }
+    })
+
+  // Relacionar con edges (solo entre ActiveObjects)
+  edges.value.forEach((edge) => {
+    const sourceNode = nodes.value.find((n) => n.id === edge.source)
+    const targetNode = nodes.value.find((n) => n.id === edge.target)
+    if (
+      sourceNode && targetNode &&
+      sourceNode.originData.class_name !== "Bucket" &&
+      targetNode.originData.class_name !== "Bucket"
+    ) {
+      const targetTrigger = triggers.find(
+        (t) => t.name === targetNode.data.label.replace(/\s+/g, "")
+      )
+      if (targetTrigger) {
+        // si ya hay depends_on lo convertimos en array
+        if (targetTrigger.depends_on) {
+          targetTrigger.depends_on = [].concat(targetTrigger.depends_on, sourceNode.data.label.replace(/\s+/g, ""))
+        } else {
+          targetTrigger.depends_on = sourceNode.data.label.replace(/\s+/g, "")
+        }
+      }
+    }
+  })
+
+  // 👉 envolvemos en el payload esperado
+  return {
+    format: "yaml",
+    content: yaml.dump({ triggers }) // 👈 string YAML
+  }
+}
+
 
 /* Guardar config */
 const handleSaveConfig = (payload) => {
@@ -124,16 +194,24 @@ const handleSaveConfig = (payload) => {
 }
 
 /* Objetos disponibles */
+/* Objetos disponibles (extendido con métodos) */
 const availableObjects = computed(() =>
-  activeObjectsStore.activeObjects.map((ao) => ({
-    id: ao.active_object_id,
-    label: ao.axo_alias || ao.axo_class_name,
-    class_name: ao.axo_class_name,
-    type: ao.axo_module,
-    alias: ao.axo_alias,
-    icon: OA,
-  }))
+  activeObjectsStore.activeObjects.flatMap((ao) => {
+    const methods = ao.axo_schema?.methods || {}
+    return Object.entries(methods).map(([methodName, params]) => ({
+      id: `${ao.active_object_id}`,
+      parentId: ao.active_object_id,
+      label: `${ao.axo_alias || ao.axo_class_name}.${methodName}`,
+      class_name: ao.axo_class_name,
+      type: ao.axo_module,
+      alias: ao.axo_alias,
+      method: methodName,
+      params: params, // parámetros requeridos
+      icon: OA,
+    }))
+  })
 )
+
 
 /* Estado del grafo */
 const nodes = ref([])
@@ -210,25 +288,43 @@ const onDrop = async (event) => {
   })
 
   const newNode = {
-    id: `${data.active_object_id || data.id}-${Date.now()}`,
+    id: `${data.active_object_id}-${data.method || Date.now()}`,
     type: "custom",
     position,
-    data: { label: data.alias || data.class_name, icon: data.icon },
+    data: { label: data.alias || data.class_name, method: data.method, icon: data.icon },
     selectable: true,
     draggable: true,
     connectable: true,
     originData: {
       ...data,
-      active_object_id: data.active_object_id || data.id,
+      active_object_id: data.id,
+      method: data.method,
+      params: data.params || [],
     },
   }
 
   nodes.value.push(newNode)
 
-  if (newNode.originData.class_name !== "Bucket") {
-    await openConfig(newNode)
+  selectedOA.value = newNode
+  await openConfig(newNode)
+
+}
+
+
+
+const exportAndSend = async () => {
+  const choreographyJson = buildChoreographyJson()
+  const { color, data, message } = await choreographyStore.interpretChoreography(choreographyJson)
+
+  if (color === "success") {
+    snackbar.value = { show: true, text: "Choreography sent to ShieldX", color }
+    console.log("Interpretation result:", data)
+  } else {
+    snackbar.value = { show: true, text: message, color }
   }
 }
+
+
 
 /* Conexiones */
 const onConnect = (params) => {
