@@ -18,54 +18,52 @@
     <v-divider></v-divider>
 
     <v-card-text class="pt-4">
-  <!-- Constructor -->
-  <div v-if="Object.keys(form.init).length">
-    <v-card class="mb-6 pa-4 rounded-lg outlined">
-      <h3 class="text-subtitle-1 font-weight-medium mb-3">
-        <v-icon size="18" class="mr-2">mdi-cog-outline</v-icon>
-        Constructor (__init__)
-      </h3>
-      <v-row dense>
-        <v-col v-for="(value, param) in form.init" :key="param" cols="12" md="6">
-          <v-text-field
-            v-model="form.init[param]"
-            :label="param"
-            variant="outlined"
-            density="comfortable"
-            clearable
-            prepend-inner-icon="mdi-tune"
-          />
-        </v-col>
-      </v-row>
-    </v-card>
-  </div>
+      <!-- Constructor -->
+      <div v-if="Object.keys(form.init).length">
+        <v-card class="mb-6 pa-4 rounded-lg outlined">
+          <h3 class="text-subtitle-1 font-weight-medium mb-3">
+            <v-icon size="18" class="mr-2">mdi-cog-outline</v-icon>
+            Constructor (__init__)
+          </h3>
+          <v-row dense>
+            <v-col v-for="param in schema.init_params" :key="param.name" cols="12" md="6">
+              <v-text-field
+                v-model="form.init[param.name]"
+                :label="`${param.name} (${param.type || 'any'})`"
+                :hint="param.description || ''"
+                persistent-hint
+                variant="outlined"
+                density="comfortable"
+                clearable
+                prepend-inner-icon="mdi-tune"
+              />
+            </v-col>
+          </v-row>
+        </v-card>
+      </div>
 
-  <!-- Método seleccionado -->
-  <v-card class="pa-4 rounded-lg outlined">
-    <h3 class="text-subtitle-1 font-weight-medium mb-3">
-      <v-icon size="18" class="mr-2">mdi-function-variant</v-icon>
-      Method: {{ oa.originData.method }}()
-    </h3>
-    <v-row dense>
-      <v-col
-        v-for="(value, param) in form.params"
-        :key="param"
-        cols="12"
-        md="6"
-      >
-        <v-text-field
-          v-model="form.params[param]"
-          :label="param"
-          variant="outlined"
-          density="comfortable"
-          clearable
-          prepend-inner-icon="mdi-code-braces"
-        />
-      </v-col>
-    </v-row>
-  </v-card>
-</v-card-text>
-
+      <!-- Método seleccionado -->
+      <v-card class="pa-4 rounded-lg outlined">
+        <h3 class="text-subtitle-1 font-weight-medium mb-3">
+          <v-icon size="18" class="mr-2">mdi-function-variant</v-icon>
+          Method: {{ oa.originData.method }}()
+        </h3>
+        <v-row dense>
+          <v-col v-for="param in schema.call_params" :key="param.name" cols="12" md="6">
+            <v-text-field
+              v-model="form.params[param.name]"
+              :label="`${param.name} (${param.type || 'any'})`"
+              :hint="param.description || ''"
+              persistent-hint
+              variant="outlined"
+              density="comfortable"
+              clearable
+              prepend-inner-icon="mdi-code-braces"
+            />
+          </v-col>
+        </v-row>
+      </v-card>
+    </v-card-text>
 
     <v-divider></v-divider>
 
@@ -98,7 +96,7 @@ import { reactive, watch } from "vue"
 
 const props = defineProps({
   oa: { type: Object, required: true },
-  schema: { type: Object, required: true }, // ahora schema = { params: [...] }
+  schema: { type: Object, required: true }, // schema = { init_params: [...], call_params: [...] }
 })
 
 const emit = defineEmits(["save", "close"])
@@ -110,13 +108,17 @@ watch(
   (schema) => {
     if (!schema) return
 
-    // Constructor (si existe)
+    // Constructor (__init__)
     form.init = {}
-    schema.init?.forEach((p) => (form.init[p] = ""))
+    schema.init_params?.forEach((p) => {
+      form.init[p.name] = p.default ?? ""
+    })
 
-    // Solo los parámetros del método arrastrado
+    // Método (call_params)
     form.params = {}
-    ;(schema.params || []).forEach((p) => (form.params[p] = ""))
+    schema.call_params?.forEach((p) => {
+      form.params[p.name] = p.default ?? ""
+    })
   },
   { immediate: true }
 )
@@ -124,21 +126,20 @@ watch(
 const saveConfig = () => {
   emit("save", {
     oaId: props.oa.originData.active_object_id,
-    method: props.oa.originData.method, // <- identificar el método
+    method: props.oa.originData.method,
     config: JSON.parse(JSON.stringify(form)),
   })
 }
 </script>
 
-
 <style>
 .scrollable-content {
-  max-height: 80%; /* ajusta según prefieras */
+  max-height: 80%;
   overflow-y: auto;
   padding-right: 8px;
 }
 
-/* Scroll discreto en navegadores basados en WebKit (Chrome, Edge, Safari) */
+/* Scroll discreto en navegadores WebKit */
 .scrollable-content::-webkit-scrollbar {
   width: 6px;
 }

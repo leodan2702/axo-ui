@@ -2,7 +2,7 @@
   <v-main class="d-flex flex-column pa-0 ma-0">
     <v-container fluid class="pa-0 ma-0 d-flex h-100">
       <!-- Side panel -->
-      <SidePanel :objects="availableObjects" />
+      <SidePanel :objects="hierarchyStore.treeData" />
 
       <div class="graph-container">
         <!-- Toolbar -->
@@ -74,9 +74,20 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watchEffect } from "vue"
+import { ref, onMounted, onBeforeUnmount } from "vue"
 import { VueFlow, useVueFlow } from "@vue-flow/core"
-import { useActiveObjectsStore } from "@/store/active_objects"
+import { useHierarchyStore } from "@/store/HierarchyStore"
+
+const hierarchyStore = useHierarchyStore()
+
+onMounted(async () => {
+  await hierarchyStore.fetchHierarchy()
+  window.addEventListener("keydown", onKeyDown)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener("keydown", onKeyDown)
+})
+
 import "@vue-flow/core/dist/style.css"
 import "@vue-flow/core/dist/theme-default.css"
 import yaml from "js-yaml"
@@ -89,152 +100,40 @@ import del from "@/assets/icons-delete.png"
 import SidePanel from "../components/SidePanel.vue"
 import CustomNode from "../components/CustomNode.vue"
 import OAConfigForm from "@/components/OAConfigForm.vue"
+import { useChoreographyStore } from "@/store/run_choreograpy"
 
 const nodeTypes = { custom: CustomNode }
 const { project } = useVueFlow({ id: "designer" })
-import { useChoreographyStore } from "@/store/run_choreograpy"
-
 const choreographyStore = useChoreographyStore()
-const activeObjectsStore = useActiveObjectsStore()
 
 const snackbar = ref({ show: false, text: "", color: "error" })
 const selectedOA = ref(null)
 const schemaForSelected = ref(null)
 const showConfigDialog = ref(false)
 
-
-
 /* Cargar config de un OA */
-const openConfig = async (node) => {
+const openConfig = (node) => {
   selectedOA.value = node
 
-  const { color, data } = await activeObjectsStore.getActiveObjectSchema(
-    node.originData.active_object_id
-  )
-
-  if (color === "success") {
-    const method = node.originData.method
-
-    if (method) {
-      // Si el método existe en el schema del store, úsalo
-      if (data.methods && data.methods[method]) {
-        schemaForSelected.value = { params: data.methods[method] }
-      } else {
-        // fallback: usa lo que guardaste en originData
-        schemaForSelected.value = { params: node.originData.params || [] }
-      }
-    } else {
-      // bucket u objeto completo
-      schemaForSelected.value = data
+  // Sacar directamente los parámetros desde functionData
+  const fnData = node.originData.functionData
+  if (fnData) {
+    schemaForSelected.value = {
+      init_params: fnData.init_params || [],
+      call_params: fnData.call_params || [],
     }
-
-    showConfigDialog.value = true
-    console.log("Schema cargado:", schemaForSelected.value)
   } else {
-    snackbar.value = {
-      show: true,
-      text: "The schema could not be loaded",
-      color: "error"
-    }
+    schemaForSelected.value = { init_params: [], call_params: [] }
   }
+
+  showConfigDialog.value = true
+  console.log("Schema cargado:", schemaForSelected.value)
 }
-
-const buildChoreographyJson = () => {
-  const triggers = nodes.value
-    .filter((node) => node.originData.class_name !== "Bucket") // excluir Buckets
-    .map((node) => {
-      const method = node.originData.method || "run"
-      const alias = `${node.originData.alias || node.originData.class_name}.${method}`
-
-      return {
-        name: node.data.label.replace(/\s+/g, ""),
-        rule: {
-          target: { alias },
-          parameters: {}
-        }
-      }
-    })
-
-  // Relacionar con edges (solo entre ActiveObjects)
-  edges.value.forEach((edge) => {
-    const sourceNode = nodes.value.find((n) => n.id === edge.source)
-    const targetNode = nodes.value.find((n) => n.id === edge.target)
-    if (
-      sourceNode && targetNode &&
-      sourceNode.originData.class_name !== "Bucket" &&
-      targetNode.originData.class_name !== "Bucket"
-    ) {
-      const targetTrigger = triggers.find(
-        (t) => t.name === targetNode.data.label.replace(/\s+/g, "")
-      )
-      if (targetTrigger) {
-        // si ya hay depends_on lo convertimos en array
-        if (targetTrigger.depends_on) {
-          targetTrigger.depends_on = [].concat(targetTrigger.depends_on, sourceNode.data.label.replace(/\s+/g, ""))
-        } else {
-          targetTrigger.depends_on = sourceNode.data.label.replace(/\s+/g, "")
-        }
-      }
-    }
-  })
-
-  // 👉 envolvemos en el payload esperado
-  return {
-    format: "yaml",
-    content: yaml.dump({ triggers }) // 👈 string YAML
-  }
-}
-
-
-/* Guardar config */
-const handleSaveConfig = (payload) => {
-  console.log("Config guardada", payload)
-  showConfigDialog.value = false
-  // Aquí guardas en MictlanX o lo que necesites
-}
-
-/* Objetos disponibles */
-/* Objetos disponibles (extendido con métodos) */
-const availableObjects = computed(() =>
-  activeObjectsStore.activeObjects.flatMap((ao) => {
-    const methods = ao.axo_schema?.methods || {}
-    return Object.entries(methods).map(([methodName, params]) => ({
-      id: `${ao.active_object_id}`,
-      parentId: ao.active_object_id,
-      label: `${ao.axo_alias || ao.axo_class_name}.${methodName}`,
-      class_name: ao.axo_class_name,
-      type: ao.axo_module,
-      alias: ao.axo_alias,
-      method: methodName,
-      params: params, // parámetros requeridos
-      icon: OA,
-    }))
-  })
-)
 
 
 /* Estado del grafo */
 const nodes = ref([])
 const edges = ref([])
-
-/* Eventos globales */
-onMounted(async () => {
-  await activeObjectsStore.getActiveObjects()
-  window.addEventListener("keydown", onKeyDown)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener("keydown", onKeyDown)
-})
-
-const reconfigureSelected = async () => {
-  const selectedNode = nodes.value.find((n) => n.selected)
-  if (!selectedNode) {
-    snackbar.value = { show: true, text: "Select an object first", color: "error" }
-    return
-  }
-  await openConfig(selectedNode)
-}
 
 /* Crear bucket */
 const createBucket = () => {
@@ -256,6 +155,16 @@ const clearGraph = () => {
   nodes.value = []
   edges.value = []
 }
+
+const reconfigureSelected = async () => {
+  const selectedNode = nodes.value.find((n) => n.selected)
+  if (!selectedNode) {
+    snackbar.value = { show: true, text: "Select an object first", color: "error" }
+    return
+  }
+  openConfig(selectedNode)
+}
+
 
 /* Eliminar seleccionados */
 const deleteSelected = () => {
@@ -291,26 +200,56 @@ const onDrop = async (event) => {
     id: `${data.active_object_id}-${data.method || Date.now()}`,
     type: "custom",
     position,
-    data: { label: data.alias || data.class_name, method: data.method, icon: data.icon },
+    data: { label: data.alias || data.class_name, method: data.method, icon: OA},
     selectable: true,
     draggable: true,
     connectable: true,
-    originData: {
-      ...data,
-      active_object_id: data.id,
-      method: data.method,
-      params: data.params || [],
-    },
+    originData: data
   }
 
   nodes.value.push(newNode)
 
   selectedOA.value = newNode
   await openConfig(newNode)
-
 }
 
+/* Exportar coreografía */
+const buildChoreographyJson = () => {
+  const triggers = nodes.value
+    .filter((node) => node.originData.class_name !== "Bucket")
+    .map((node) => {
+      const method = node.originData.method || "run"
+      const alias = `${node.originData.alias || node.originData.class_name}.${method}`
 
+      return {
+        name: node.data.label.replace(/\s+/g, ""),
+        rule: {
+          target: { alias },
+          parameters: {}
+        }
+      }
+    })
+
+  edges.value.forEach((edge) => {
+    const sourceNode = nodes.value.find((n) => n.id === edge.source)
+    const targetNode = nodes.value.find((n) => n.id === edge.target)
+    if (sourceNode && targetNode && sourceNode.originData.class_name !== "Bucket" && targetNode.originData.class_name !== "Bucket") {
+      const targetTrigger = triggers.find((t) => t.name === targetNode.data.label.replace(/\s+/g, ""))
+      if (targetTrigger) {
+        if (targetTrigger.depends_on) {
+          targetTrigger.depends_on = [].concat(targetTrigger.depends_on, sourceNode.data.label.replace(/\s+/g, ""))
+        } else {
+          targetTrigger.depends_on = sourceNode.data.label.replace(/\s+/g, "")
+        }
+      }
+    }
+  })
+
+  return {
+    format: "yaml",
+    content: yaml.dump({ triggers })
+  }
+}
 
 const exportAndSend = async () => {
   const choreographyJson = buildChoreographyJson()
@@ -323,8 +262,6 @@ const exportAndSend = async () => {
     snackbar.value = { show: true, text: message, color }
   }
 }
-
-
 
 /* Conexiones */
 const onConnect = (params) => {
@@ -351,6 +288,7 @@ const onConnect = (params) => {
   })
 }
 </script>
+
 
 
 <style>
