@@ -1,5 +1,5 @@
 <template>
-  <div class="side-panel">
+  <div class="side-panel" data-step="registered-objects-panel">
     <!-- Breadcrumbs -->
     <v-breadcrumbs v-if="stack.length > 0" :items="breadcrumbs" divider="›">
       <template v-slot:prepend>
