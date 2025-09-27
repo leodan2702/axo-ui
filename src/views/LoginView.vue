@@ -9,6 +9,7 @@
       style="position: relative"
     >
       <v-sheet
+        data-step="app-logo" 
         width="100"
         height="100"
         class="d-flex align-center justify-center"
@@ -52,6 +53,7 @@
         </div>
         <div class="d-flex flex-column mt-4 w-100 justify-center align-center">
           <v-btn
+            data-step="login-button" 
             :loading="isLoading"
             :disabled="isLoading"
             color="#06141b"
@@ -62,6 +64,7 @@
           <div class="d-flex">
             <p class="text-disabled"> Don't have an account? </p>
             <router-link
+              data-step="signup-link" 
               to="/register"
               class="text-decoration-none font-weight-bold"
               style="color: #06141b"

@@ -37,7 +37,7 @@
       />
 
       <!-- Botón Guardar -->
-      <div class="d-flex mt-4">
+      <div class="d-flex mt-4" data-step="save-policy-button">
         <v-btn
           :loading="securityPoliciesStore.loading"
           color="#11222eff"

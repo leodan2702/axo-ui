@@ -6,6 +6,7 @@
 
     <!-- Formulario -->
     <v-form
+      data-step="create-service-button"
       ref="formRef"
       v-model="isValid"
       fast-fail
@@ -76,6 +77,7 @@
       <!-- Botón Guardar -->
       <div class="d-flex mt-4">
         <v-btn
+        data-step="save-microservice-button"
           :loading="microservicesStore.loading"
           color="#11222eff"
           size="large"
