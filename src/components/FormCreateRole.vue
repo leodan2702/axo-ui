@@ -7,7 +7,7 @@
     <!-- Formulario -->
     <v-form
       ref="formRef"
-      v-model="isValid"
+      v-model="isValidForm"
       fast-fail
       @submit.prevent="save"
       :lazy-validation="true"
@@ -46,6 +46,7 @@
         prepend-inner-icon="mdi-lock"
         required
         @focus="permissionsTouched = true"
+        @change="permissionsTouched = true"
       />
 
       <!-- Botones -->
@@ -57,7 +58,7 @@
           type="submit"
           variant="elevated"
           block
-          :disabled="!isValid"
+          :disabled="!canSubmit"
         >
           {{ isEditing ? 'Update' : 'Save' }}
         </v-btn>
@@ -68,7 +69,7 @@
     <v-snackbar
       v-model="snackbar.show"
       :color="snackbar.color"
-      timeout="3000"
+      timeout="2000"
       location="bottom center"
     >
       {{ snackbar.text }}
@@ -84,13 +85,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, onBeforeRouteUpdate } from 'vue-router'
 import { useRolesStore } from '@/store/roles'
 
 const availablePermissions = ref(['Read', 'Write', 'Delete'])
 const rolesStore = useRolesStore()
-const isValid = ref(false)
+const isValidForm = ref(false)
 const formRef = ref(null)
 const permissionsTouched = ref(false)
 
@@ -102,23 +103,33 @@ const snackbar = ref({
 
 const rules = {
   required: v => !!v || 'Field required',
-  minOne: v => (permissionsTouched.value ? (v && v.length > 0 || 'Select at least one permission') : true)
+  minOne: v => (!permissionsTouched.value || (v && v.length > 0)) || 'Select at least one permission'
 }
 
 const route = useRoute()
 const isEditing = ref(false)
+const canSubmit = computed(() => {
+  return (
+    !!rolesStore.form.name &&
+    !!rolesStore.form.description &&
+    rolesStore.form.permissions.length > 0
+  )
+})
 
 const loadForm = (editQuery) => {
   if (editQuery) {
     isEditing.value = true
     const roleToEdit = rolesStore.roles.find(role => role.role_id === editQuery)
-    if (roleToEdit) rolesStore.form = { ...roleToEdit }
+    if (roleToEdit) {
+      rolesStore.form = { ...roleToEdit }
+      permissionsTouched.value = true
+    }
   } else {
     isEditing.value = false
     rolesStore.resetForm()
     permissionsTouched.value = false
-    formRef.value.resetValidation()
-    isValid.value = false
+    formRef.value?.resetValidation()
+    isValidForm.value = false
   }
 }
 
@@ -133,11 +144,14 @@ onBeforeRouteUpdate((to) => {
 onBeforeUnmount(() => {
   rolesStore.resetForm()
   permissionsTouched.value = false
-  formRef.value.resetValidation()
-  isValid.value = false
+  formRef.value?.resetValidation()
+  isValidForm.value = false
 })
 
 const save = async () => {
+  const valid = await formRef.value.validate()
+  if (!valid) return
+
   let result
   if (isEditing.value) {
     const roleId = route.query.edit 
@@ -155,10 +169,10 @@ const save = async () => {
       color: 'success'
     }
 
-    formRef.value.resetValidation()
+    formRef.value?.resetValidation()
 
     if (!isEditing.value){
-      isValid.value = false
+      isValidForm.value = false
       rolesStore.resetForm()
       permissionsTouched.value = false
     }
