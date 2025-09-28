@@ -32,7 +32,7 @@
               </v-sheet>
             </v-col>
 
-            <v-col>
+            <v-col data-step="object-code-editor">
               <v-sheet class="code-area-sheet" elevation="1">
                 <CodeArea />
               </v-sheet>

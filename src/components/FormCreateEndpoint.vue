@@ -73,6 +73,7 @@
       <!-- Botón Guardar -->
       <div class="d-flex mt-4">
         <v-btn
+          data-step="save-endpoint-button"
           :loading="endpointsStore.loading"
           color="#11222eff"
           size="large"

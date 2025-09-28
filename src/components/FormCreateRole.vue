@@ -49,7 +49,7 @@
       />
 
       <!-- Botones -->
-      <div class="d-flex mt-4">
+      <div class="d-flex mt-4" data-step="rol-button">
         <v-btn
           :loading="rolesStore.loading"
           color="#11222eff"

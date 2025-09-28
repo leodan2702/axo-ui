@@ -50,6 +50,7 @@
         label="Microservice"
         variant="filled"
         prepend-inner-icon="mdi-cogs"
+        :disabled="!selectedService || microservices.length === 0"
         @update:model-value="onMicroserviceChange"
       />
 
@@ -89,6 +90,7 @@
       <!-- Botón Guardar -->
       <div class="d-flex mt-4">
         <v-btn
+          data-step="persistency-button"
           :loading="activeObjectsStore.loading"
           color="#11222eff"
           size="large"
@@ -225,9 +227,6 @@ const onServiceChange = (serviceId) => {
     selectedMicroservice.value = null
     activeObjectsStore.form.axo_microservice_id = null
   }
-
-  const svc = servicesStore.services.find(s => s.service_id === serviceId)
-  selectedServiceName.value = svc ? svc.name : ''
 }
 
 // --- Cambiar microservice seleccionado ---

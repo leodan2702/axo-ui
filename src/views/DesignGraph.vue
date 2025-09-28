@@ -7,26 +7,26 @@
       <div class="graph-container">
         <!-- Toolbar -->
         <div class="toolbar">
-          <button class="btn primary" @click="createBucket">
+          <button class="btn primary" @click="createBucket" data-step="create-bucket-button">
             <img :src="bucket" alt="bucket" class="btn-icon" />
             Create Bucket
           </button>
 
-          <button class="btn primary" @click="reconfigureSelected">
+          <button class="btn primary" @click="reconfigureSelected" data-step="edit-selection-button">
             <img :src="OA" alt="configure" class="btn-icon" />
              Edit Selection
           </button>
 
-          <button class="btn primary" @click="clearGraph">
+          <button class="btn primary" @click="clearGraph" data-step="clean-canvas-button">
             <img :src="clean" alt="clean" class="btn-icon" />
             Clean Canvas
           </button>
 
-          <button class="btn primary" @click="deleteSelected">
+          <button class="btn primary" @click="deleteSelected" data-step="remove-selection-button">
             <img :src="del" alt="delete" class="btn-icon" /> Remove Selection
           </button>
 
-          <button class="btn primary" @click="exportAndSend">
+          <button class="btn primary" @click="exportAndSend" data-step="run-coreography-button">
             <img :src="iconrun" alt="iconrun" class="btn-icon" />
             Run Choreography
           </button>

@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@globalhive/vuejs-tour": "^2.3.8",
     "@mdi/font": "^5.9.55",
     "@vue-flow/core": "^1.46.4",
     "monaco-editor": "^0.52.2",
