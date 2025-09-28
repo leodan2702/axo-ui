@@ -62,12 +62,16 @@ const currentLevelItems = computed(() => {
 const currentTitle = computed(() => {
   const last = stack.value[stack.value.length - 1]
   switch (last?.type) {
+    
     case "service":
       return "Microservices"
-    case "microservice":
+    
+      case "microservice":
       return "Active Objects"
-    case "active_object":
-      return "Binding Objects"
+    
+      case "active_object":
+      return "Methods"
+
     case "function":
       return "Methods"
     default:
