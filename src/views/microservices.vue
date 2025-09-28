@@ -25,7 +25,7 @@
             v-for="(ms, index) in filteredMicroservices"
             :key="ms.service_id"
             :title="`Microservice: ${ms.name}`"
-            :description="`CPU: ${ms.resources.cpu} | RAM: ${ms.resources.ram} | Functions: ${ms.functions.length}`"
+            :description="`CPU: ${ms.resources.cpu} | RAM: ${ms.resources.ram}`"
             :autor="ms.created_at"
             :image="microser"
           >

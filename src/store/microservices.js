@@ -11,8 +11,7 @@ export const useMicroservicesStore = defineStore("microservices", () => {
   const form = ref({
     name: "",
     service_id: "",
-    resources: { cpu: 0, ram: "" },
-    functions: []
+    resources: { cpu: 0, ram: "" }
   });
 
   const loading = ref(false);
@@ -21,8 +20,7 @@ export const useMicroservicesStore = defineStore("microservices", () => {
     form.value = {
       name: "",
       service_id: "",
-      resources: { cpu: 0, ram: "" },
-      functions: []
+      resources: { cpu: 0, ram: "" }
     };
   }
 
