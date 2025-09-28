@@ -12,7 +12,7 @@
 
         <!-- Formulario de Security Policy -->
         <v-sheet class="mt-5 d-flex justify-center" style="width: 100%;">
-          <FormCreateSecurityPolicy />
+          <FormCreateSecurityPolicy data-step="create-policy"/>
         </v-sheet>
       </div>
     </v-container>

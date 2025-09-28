@@ -1,5 +1,5 @@
 <template>
-  <div class="side-panel">
+  <div class="side-panel" data-step="registered-objects-panel">
     <!-- Breadcrumbs -->
     <v-breadcrumbs v-if="stack.length > 0" :items="breadcrumbs" divider="›">
       <template v-slot:prepend>
@@ -62,12 +62,16 @@ const currentLevelItems = computed(() => {
 const currentTitle = computed(() => {
   const last = stack.value[stack.value.length - 1]
   switch (last?.type) {
+    
     case "service":
       return "Microservices"
-    case "microservice":
+    
+      case "microservice":
       return "Active Objects"
-    case "active_object":
-      return "Binding Objects"
+    
+      case "active_object":
+      return "Methods"
+
     case "function":
       return "Methods"
     default:
