@@ -52,19 +52,19 @@
             <v-card>
                 <v-card-title class="headline">
                     <v-icon icon="mdi-restart" class="mr-2"></v-icon>
-                    Reiniciar Tour Guiado
+                    Restart Guided Tour
                 </v-card-title>
                 <v-card-text>
-                    ¿Estás seguro de que quieres reiniciar el tour guiado? 
-                    Esto te llevará a la página de inicio y comenzará el tour desde el principio.
+                    Are you sure you want to restart the guided tour?
+                    This will take you to the home page and start the tour from the beginning.
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="grey" variant="text" @click="confirmDialog = false">
-                        Cancelar
+                        Cancel
                     </v-btn>
                     <v-btn color="primary" variant="flat" @click="confirmRestartTour">
-                        Sí, Reiniciar
+                        Yes, Restart
                     </v-btn>
                 </v-card-actions>
             </v-card>
