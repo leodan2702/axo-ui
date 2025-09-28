@@ -42,17 +42,19 @@
       />
 
       <!-- Microservice -->
-      <v-select
-        v-model="selectedMicroservice"
-        :items="microservices"
-        item-title="name"
-        item-value="microservice_id"
-        label="Microservice"
-        variant="filled"
-        prepend-inner-icon="mdi-cogs"
-        :disabled="!selectedService || microservices.length === 0"
-        @update:model-value="onMicroserviceChange"
-      />
+    <v-select
+      v-if="selectedService" 
+      v-model="selectedMicroservice"
+      :items="microservices"
+      item-title="name"
+      item-value="microservice_id"
+      label="Microservice"
+      variant="filled"
+      prepend-inner-icon="mdi-cogs"
+      :disabled="!selectedService"
+      @update:model-value="onMicroserviceChange"
+    />
+
 
       <!-- Version editable -->
       <v-text-field
@@ -227,6 +229,9 @@ const onServiceChange = (serviceId) => {
     selectedMicroservice.value = null
     activeObjectsStore.form.axo_microservice_id = null
   }
+
+  const svc = servicesStore.services.find(s => s.service_id === serviceId)
+  selectedServiceName.value = svc ? svc.name : ''
 }
 
 // --- Cambiar microservice seleccionado ---

@@ -1,6 +1,6 @@
-
 import { defineStore } from "pinia"
 import { ref } from "vue"
+import yaml from "js-yaml"   // 👈 asegúrate de importar yaml aquí también
 
 const SHIELDX_URL = `http://localhost:20000`
 const API_VERSION = `v1`
@@ -31,43 +31,32 @@ export const useChoreographyStore = defineStore("choreography", () => {
     }
   }
 
+  async function interpretChoreographyYaml(choreographyObj) {
+    loading.value = true
+    try {
+      const yamlContent = yaml.dump(choreographyObj)   // 👈 convierte el objeto a texto YAML
+
+      const response = await fetch(`${SHIELDX_URL}/api/${API_VERSION}/interpret/yaml`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-yaml" },
+        body: yamlContent,
+      })
+
+      if (!response.ok) throw new Error("Failed to interpret choreography YAML")
+
+      const result = await response.json()
+      return { color: "success", data: result }
+    } catch (error) {
+      console.error("Error", error)
+      return { color: "error", message: error?.message ?? "Unknown error" }
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     interpretChoreography,
+    interpretChoreographyYaml,
   }
 })
-
-
-const buildChoreographyJson = () => {
-  const triggers = nodes.value.map((node) => {
-    const method = node.originData.method || "run"
-    const alias = `${node.originData.alias || node.originData.class_name}.${method}`
-
-    return {
-      name: node.data.label.replace(/\s+/g, ""),
-      rule: {
-        target: { alias },
-        parameters: {
-          init: node.originData.params?.init || {},
-          call: node.originData.params?.call || {}
-        }
-      }
-    }
-  })
-
-  // Relacionar con edges
-  edges.value.forEach((edge) => {
-    const sourceNode = nodes.value.find((n) => n.id === edge.source)
-    const targetNode = nodes.value.find((n) => n.id === edge.target)
-    if (sourceNode && targetNode) {
-      const targetTrigger = triggers.find(
-        (t) => t.name === targetNode.data.label.replace(/\s+/g, "")
-      )
-      if (targetTrigger) {
-        targetTrigger.depends_on = sourceNode.data.label.replace(/\s+/g, "")
-      }
-    }
-  })
-
-  return { triggers }
-}
