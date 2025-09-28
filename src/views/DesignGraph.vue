@@ -61,14 +61,26 @@
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
       {{ snackbar.text }}
     </v-snackbar>
-    <v-dialog v-model="showConfigDialog" max-width="600">
+    <v-dialog v-model="showConfigDialog" max-width="700">
+      <!-- Si es Bucket, abre el BucketForm -->
+      <BucketForm
+        v-if="selectedOA && selectedOA.originData.class_name === 'Bucket'"
+        :bucket="selectedOA.originData"
+        @save="handleSaveConfig"
+        @close="() => showConfigDialog = false"
+      />
+
+      <!-- Si es OA, abre el OAConfigForm -->
       <OAConfigForm
-        v-if="selectedOA && schemaForSelected"
+        v-else-if="selectedOA && schemaForSelected"
         :oa="selectedOA"
         :schema="schemaForSelected"
         @save="handleSaveConfig"
+        @close="() => showConfigDialog = false"
       />
     </v-dialog>
+
+
 
   </v-main>
 </template>
@@ -100,6 +112,8 @@ import del from "@/assets/icons-delete.png"
 import SidePanel from "../components/SidePanel.vue"
 import CustomNode from "../components/CustomNode.vue"
 import OAConfigForm from "@/components/OAConfigForm.vue"
+import BucketForm from "@/components/BucketForm.vue"
+
 import { useChoreographyStore } from "@/store/run_choreograpy"
 
 const nodeTypes = { custom: CustomNode }
@@ -112,23 +126,29 @@ const schemaForSelected = ref(null)
 const showConfigDialog = ref(false)
 
 /* Cargar config de un OA */
+// DesignGraph.vue
 const openConfig = (node) => {
   selectedOA.value = node
 
-  // Sacar directamente los parámetros desde functionData
-  const fnData = node.originData.functionData
-  if (fnData) {
-    schemaForSelected.value = {
-      init_params: fnData.init_params || [],
-      call_params: fnData.call_params || [],
-    }
+  if (node.originData.class_name === "Bucket") {
+    schemaForSelected.value = null
   } else {
-    schemaForSelected.value = { init_params: [], call_params: [] }
+    const fnData = node.originData.functionData || { init_params: [], call_params: [] }
+    const saved = node.originData.parameters || { init: {}, call: {} }
+
+    // Inyectar defaults con lo previamente guardado
+    const withDefaults = (arr, bag) =>
+      (arr || []).map(p => ({ ...p, default: bag?.[p.name] ?? p.default ?? "" }))
+
+    schemaForSelected.value = {
+      init_params: withDefaults(fnData.init_params, saved.init),
+      call_params: withDefaults(fnData.call_params, saved.call),
+    }
   }
 
   showConfigDialog.value = true
-  console.log("Schema cargado:", schemaForSelected.value)
 }
+
 
 
 /* Estado del grafo */
@@ -146,7 +166,8 @@ const createBucket = () => {
     selectable: true,
     draggable: true,
     connectable: true,
-    originData: { id: newId, class_name: "Bucket", type: "Bucket", icon: bucket },
+    originData: { id: newId, class_name: "Bucket", type: "Bucket", icon: bucket,sink_bucket_id: "",
+      sink_key: "", },
   })
 }
 
@@ -213,43 +234,175 @@ const onDrop = async (event) => {
   await openConfig(newNode)
 }
 
-/* Exportar coreografía */
-const buildChoreographyJson = () => {
-  const triggers = nodes.value
-    .filter((node) => node.originData.class_name !== "Bucket")
-    .map((node) => {
-      const method = node.originData.method || "run"
-      const alias = `${node.originData.alias || node.originData.class_name}.${method}`
 
-      return {
-        name: node.data.label.replace(/\s+/g, ""),
+const buildChoreographyJson = () => {
+  // ---------- helpers ----------
+  const getTriggerName = (node) =>
+    `${node.data.label.replace(/\s+/g, "")}_${node.originData.method || "run"}`
+
+  const findNode = (id) => nodes.value.find(n => n.id === id)
+
+  // ---------- 1) construir triggers base ----------
+  const triggers = []
+  const triggerByNodeId = new Map()
+
+  nodes.value
+    .filter(n => n.originData.class_name !== "Bucket")
+    .forEach(node => {
+      const method = node.originData.method || "run"
+      const alias  = `${node.originData.alias || node.originData.class_name}.${method}`
+
+      const trig = {
+        name: getTriggerName(node),
         rule: {
           target: { alias },
-          parameters: {}
-        }
+          parameters: {
+            init: { ...(node.originData.parameters?.init || {}) },
+            call: { ...(node.originData.parameters?.call || {}) },
+          },
+        },
       }
+
+      triggers.push(trig)
+      triggerByNodeId.set(node.id, trig)
     })
 
-  edges.value.forEach((edge) => {
-    const sourceNode = nodes.value.find((n) => n.id === edge.source)
-    const targetNode = nodes.value.find((n) => n.id === edge.target)
-    if (sourceNode && targetNode && sourceNode.originData.class_name !== "Bucket" && targetNode.originData.class_name !== "Bucket") {
-      const targetTrigger = triggers.find((t) => t.name === targetNode.data.label.replace(/\s+/g, ""))
-      if (targetTrigger) {
-        if (targetTrigger.depends_on) {
-          targetTrigger.depends_on = [].concat(targetTrigger.depends_on, sourceNode.data.label.replace(/\s+/g, ""))
-        } else {
-          targetTrigger.depends_on = sourceNode.data.label.replace(/\s+/g, "")
+  // ---------- 2) analizar edges para:
+  //    a) OA -> Bucket   (escritor del bucket)
+  //    b) Bucket -> OA   (lector del bucket)  y set depends_on
+  const writerByBucketNodeId = new Map()
+
+  edges.value.forEach(edge => {
+    const s = findNode(edge.source)
+    const t = findNode(edge.target)
+    if (!s || !t) return
+
+    const sIsBucket = s.originData.class_name === "Bucket"
+    const tIsBucket = t.originData.class_name === "Bucket"
+
+    // a) OA -> Bucket  => este OA "escribe" en ese bucket
+    if (!sIsBucket && tIsBucket) {
+      const writerTrig = triggerByNodeId.get(s.id)
+      if (writerTrig) {
+        writerByBucketNodeId.set(t.id, writerTrig.name)
+
+        // Propagar dónde va a escribir (sink) al call del writer
+        const sinkBucketId = t.originData.sink_bucket_id
+        const sinkKey      = t.originData.sink_key
+        if (sinkBucketId && sinkKey) {
+          writerTrig.rule.parameters.call = {
+            ...(writerTrig.rule.parameters.call || {}),
+            sink_bucket_id: sinkBucketId,
+            sink_key: sinkKey,
+          }
+        }
+      }
+    }
+
+    // b) Bucket -> OA  => este OA "lee" del bucket; depende del writer si existe
+    if (sIsBucket && !tIsBucket) {
+      const readerTrig = triggerByNodeId.get(t.id)
+      if (readerTrig) {
+        // Propagar de qué bucket lee (source) al init del reader
+        const sourceBucketId = s.originData.sink_bucket_id
+        const sourceKey      = s.originData.sink_key
+        if (sourceBucketId && sourceKey) {
+          readerTrig.rule.parameters.init = {
+            ...(readerTrig.rule.parameters.init || {}),
+            source_bucket_id: sourceBucketId,
+            source_key: sourceKey,
+          }
+        }
+
+        // Si ya conocemos quién escribió ese bucket, setear depends_on
+        const writerName = writerByBucketNodeId.get(s.id)
+        if (writerName && !readerTrig.depends_on) {
+          readerTrig.depends_on = writerName
+        }
+      }
+    }
+
+    // c) OA -> OA directo (por si también lo usas)
+    if (!sIsBucket && !tIsBucket) {
+      const srcTrig = triggerByNodeId.get(s.id)
+      const dstTrig = triggerByNodeId.get(t.id)
+      if (srcTrig && dstTrig && !dstTrig.depends_on) {
+        dstTrig.depends_on = srcTrig.name
+      }
+    }
+  })
+
+  // ---------- 3) topological sort por depends_on ----------
+  const ordered = []
+  const visited = new Set()
+  const byName = new Map(triggers.map(t => [t.name, t]))
+
+  const visit = (trig) => {
+    if (!trig || visited.has(trig.name)) return
+    if (trig.depends_on) visit(byName.get(trig.depends_on))
+    visited.add(trig.name)
+    ordered.push(trig)
+  }
+
+  triggers.forEach(visit)
+
+  // ---------- logs útiles ----------
+  console.log("edges (raw):", JSON.parse(JSON.stringify(edges.value)))
+  console.log("writerByBucketNodeId:", Object.fromEntries(writerByBucketNodeId))
+  console.log("triggers (unsorted):", triggers.map(t => ({
+    name: t.name, depends_on: t.depends_on
+  })))
+  console.log("triggers (ordered):", ordered.map(t => ({
+    name: t.name, depends_on: t.depends_on
+  })))
+
+  const choreography = { triggers: ordered }
+  console.log("Choreography JSON (raw):", JSON.stringify(choreography, null, 2))
+  console.log("Choreography YAML:\n", yaml.dump(choreography))
+
+  return {
+    format: "yaml",
+    content: yaml.dump(choreography),
+  }
+}
+
+
+
+// DesignGraph.vue
+const handleSaveConfig = (updated) => {
+  if (!selectedOA.value) return
+
+  nodes.value = nodes.value.map(node => {
+    if (node.id !== selectedOA.value.id) return node
+
+    if (node.originData.class_name === "Bucket") {
+      return {
+        ...node,
+        originData: {
+          ...node.originData,
+          sink_bucket_id: updated.sink_bucket_id,
+          sink_key: updated.sink_key,
+        }
+      }
+    } else {
+      return {
+        ...node,
+        originData: {
+          ...node.originData,
+          parameters: {
+            init: updated?.config?.init ?? {},
+            call: updated?.config?.call ?? {},
+          }
         }
       }
     }
   })
 
-  return {
-    format: "yaml",
-    content: yaml.dump({ triggers })
-  }
+  showConfigDialog.value = false
+  snackbar.value = { show: true, text: "Configuration updated", color: "success" }
 }
+
+
 
 const exportAndSend = async () => {
   const choreographyJson = buildChoreographyJson()

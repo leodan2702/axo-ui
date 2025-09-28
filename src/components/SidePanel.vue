@@ -38,7 +38,10 @@
       >
         <img v-if="obj.icon" :src="obj.icon" class="palette-icon" />
         <span v-else>⚙️</span>
-        {{ obj.label }}
+              {{ obj.type === 'function' && obj.parentAO
+        ? `${obj.parentAO.alias || obj.parentAO.object_name}.${obj.label}()`
+        : obj.label }}
+
       </div>
     </div>
   </div>
@@ -121,7 +124,7 @@ onMounted(async () => {
 .side-panel {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 90vh;
   width: 300px;
   background: #fdfdfd;
   border-right: 2px solid #e5e7eb;

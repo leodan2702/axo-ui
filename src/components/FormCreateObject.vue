@@ -42,17 +42,20 @@
       />
 
       <!-- Microservice -->
-      <v-select
-        v-model="selectedMicroservice"
-        :items="microservices"
-        item-title="name"
-        item-value="microservice_id"
-        label="Microservice"
-        variant="filled"
-        prepend-inner-icon="mdi-cogs"
-        :disabled="!selectedService || microservices.length === 0"
-        @update:model-value="onMicroserviceChange"
-      />
+      <!-- Microservice -->
+    <v-select
+      v-if="selectedService" 
+      v-model="selectedMicroservice"
+      :items="microservices"
+      item-title="name"
+      item-value="microservice_id"
+      label="Microservice"
+      variant="filled"
+      prepend-inner-icon="mdi-cogs"
+      :disabled="!selectedService"
+      @update:model-value="onMicroserviceChange"
+    />
+
 
       <!-- Version editable -->
       <v-text-field

@@ -1,18 +1,17 @@
 <template>
-  <v-main class="d-flex-column justify-center align-center pa-5" style="min-height: 700px;">
+  <v-main class="d-flex flex-column justify-center align-center pa-5" style="min-height: 700px;">
     <v-container fluid>
       <div class="d-flex flex-column">
         <!-- Header -->
-        <div class="d-flex align-center mb-4">
+        <div class="d-flex align-center mb-6">
           <!-- Botón Return -->
           <v-btn
-            color="grey darken-1"
+            color="grey-darken-2"
             variant="outlined"
             @click="goBack('/my-objects')"
             class="mr-4"
-            
           >
-            <v-icon left>mdi-arrow-left</v-icon>
+            <v-icon start>mdi-arrow-left</v-icon>
             Return
           </v-btn>
 
@@ -23,22 +22,22 @@
         <v-divider></v-divider>
 
         <!-- Contenedor principal -->
-        <div class="pa-5">
-          <v-row no-gutters style="height: calc(100vh - 160px);">
-            
-            <v-col cols="12" md="auto" class="form-col">
-              <v-sheet class="pa-4 form-sheet" elevation="1">
+        <div class="mt-6">
+          <v-row class="form-layout" no-gutters>
+            <!-- Columna del formulario -->
+            <v-col cols="12" md="4" class="pr-md-4 mb-6 mb-md-0">
+              <v-sheet class="pa-6 form-sheet" elevation="2" rounded="lg">
                 <FormCreateObject />
               </v-sheet>
             </v-col>
 
-            <v-col data-step="object-code-editor">
-              <v-sheet class="code-area-sheet" elevation="1">
+            <!-- Columna del editor de código -->
+            <v-col cols="12" md="8">
+              <v-sheet class="code-area-sheet" elevation="2" rounded="lg">
                 <CodeArea />
               </v-sheet>
             </v-col>
           </v-row>
-
         </div>
       </div>
     </v-container>
@@ -49,44 +48,43 @@
 import { useRouter } from "vue-router"
 import FormCreateObject from '@/components/FormCreateObject.vue'
 import CodeArea from '@/components/CodeArea.vue'
-const router = useRouter()
 
+const router = useRouter()
 
 const goBack = (path) => {
   router.push({ path })
 }
-
-
-
-
 </script>
 
 <style scoped>
 /* Título */
 .page-title {
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: #1f2937;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1f2937; /* gris oscuro */
   margin: 0;
 }
 
-
-.form-col {
-  max-width: 420px;
+/* Layout general */
+.form-layout {
+  min-height: calc(100vh - 200px);
 }
 
+/* Formulario */
 .form-sheet {
-  height: 100%; 
   display: flex;
   flex-direction: column;
+  background-color: #fafafa;
+  border: 1px solid #e5e7eb;
 }
 
 /* Área de código */
 .code-area-sheet {
-  height: 100%;           
   display: flex;
   flex-direction: column;
-  padding: 0;             
+  height: 100%;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
 }
-
 </style>
