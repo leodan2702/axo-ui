@@ -58,7 +58,7 @@
     </v-container>
 
     <!-- Notificaciones -->
-    <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="2000">
       {{ snackbar.text }}
     </v-snackbar>
     <v-dialog v-model="showConfigDialog" max-width="600">

@@ -44,13 +44,6 @@
             value="myObjects"
             @click="navigateTo('/my-objects')"
           ></v-list-item>
-          <!-- <v-list-item
-            link
-            prepend-icon="mdi-cube"
-            title="My Virtual Environment"
-            value="myEnvironment"
-            @click="navigateTo('/my-objects')"
-          ></v-list-item> -->
           <v-list-item
             link
             prepend-icon="mdi-access-point"
@@ -60,7 +53,7 @@
           ></v-list-item>
           <v-list-item
             link
-            prepend-icon="mdi-layers"
+            prepend-icon="mdi-cloud"
             title="Services"
             value="myServices"
             @click="navigateTo('/services')"
@@ -72,16 +65,9 @@
             value="myMicroservices"
             @click="navigateTo('/microservices')"
           ></v-list-item>
-          <!-- <v-list-item
-            link
-            prepend-icon="mdi-code-tags"
-            title="My Functions"
-            value="myFunctions"
-            @click="navigateTo('/functions')"
-          ></v-list-item> -->
           <v-list-item
             link
-            prepend-icon="mdi-account-cog"
+            prepend-icon="mdi-account-group"
             title="Roles"
             value="Roles"
             @click="navigateTo('/roles')"
