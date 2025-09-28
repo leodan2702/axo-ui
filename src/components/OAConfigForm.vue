@@ -104,13 +104,13 @@ const props = defineProps({
 const emit = defineEmits(["save", "close"])
 
 const form = reactive({
-  init: {},       // valores literales
-  initRefs: {},   // valores ref
+  init: {},       
+  initRefs: {},   
   params: {},
   paramRefs: {},
 })
 
-const formMode = reactive({ init: {}, call: {} }) // literal o ref
+const formMode = reactive({ init: {}, call: {} })
 
 watch(
   () => props.schema,
@@ -133,7 +133,6 @@ watch(
       }
     })
 
-    // Método (call_params)
     // Método (call_params)
     schema.call_params?.forEach((p) => {
       const saved = props.oa.originData.parameters?.call?.[p.name]

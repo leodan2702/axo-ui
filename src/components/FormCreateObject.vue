@@ -42,7 +42,6 @@
       />
 
       <!-- Microservice -->
-      <!-- Microservice -->
     <v-select
       v-if="selectedService" 
       v-model="selectedMicroservice"
@@ -230,6 +229,9 @@ const onServiceChange = (serviceId) => {
     selectedMicroservice.value = null
     activeObjectsStore.form.axo_microservice_id = null
   }
+
+  const svc = servicesStore.services.find(s => s.service_id === serviceId)
+  selectedServiceName.value = svc ? svc.name : ''
 }
 
 // --- Cambiar microservice seleccionado ---
