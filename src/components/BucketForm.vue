@@ -3,7 +3,7 @@
     <!-- Encabezado -->
     <v-card-title class="d-flex align-center py-4">
       <v-avatar size="36" color="primary" class="mr-3">
-        <v-icon>mdi-database</v-icon>
+        <v-icon>mdi-pail-plus</v-icon>
       </v-avatar>
       <div>
         <h2 class="text-h6 font-weight-bold mb-1">
@@ -35,12 +35,12 @@
               variant="outlined"
               density="comfortable"
               clearable
-              prepend-inner-icon="mdi-database"
+              prepend-inner-icon="mdi-bucket"
             />
           </v-col>
 
           <!-- sink_key -->
-          <v-col cols="12" md="6">
+          <!-- <v-col cols="12" md="6">
             <v-text-field
               v-model="form.sink_key"
               label="Sink Key"
@@ -50,8 +50,8 @@
               density="comfortable"
               clearable
               prepend-inner-icon="mdi-key-variant"
-            />
-          </v-col>
+            /> -->
+          <!-- </v-col> -->
         </v-row>
       </v-card>
     </v-card-text>

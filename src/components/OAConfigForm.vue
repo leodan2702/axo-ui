@@ -40,7 +40,7 @@
 
               <!-- Campo ref -->
               <v-text-field v-else v-model="form.initRefs[param.name]" :label="`${param.name} ($ref)`"
-                hint="Referencia MictlanX (mictlanx://...)" persistent-hint variant="outlined" density="comfortable"
+                hint="MictlanX reference (mictlanx://...)" persistent-hint variant="outlined" density="comfortable"
                 clearable prepend-inner-icon="mdi-link-variant" />
             </v-col>
           </v-row>
