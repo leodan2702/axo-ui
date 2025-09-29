@@ -8,19 +8,19 @@
 
           <!-- Botón New Security Policy -->
           <router-link to="/create-security-policy">
-            <v-btn class="btn-create-policy">
+            <v-btn class="btn-create-policy" data-step="create-policy-button">
               <v-icon left>mdi-plus</v-icon>
               New Security Policy
             </v-btn>
           </router-link>
 
           <!-- Barra de búsqueda -->
-          <SearchBar @update:search="handleSearch" class="ml-4"/>
+          <SearchBar @update:search="handleSearch" class="ml-4" data-step="search-politicas"/>
         </div>
 
         <v-divider></v-divider>
 
-        <div class="mt-5 pa-5">
+        <div class="mt-5 pa-5" data-step="policies-management-section">
           <CardVariant
             v-for="(policy, index) in filteredPolicies"
             :key="policy.sp_id"

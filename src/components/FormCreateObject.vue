@@ -10,26 +10,6 @@
       @submit.prevent="save"
       :lazy-validation="true"
     >
-      <!-- Module -->
-      <!-- <v-text-field
-        v-model="activeObjectsStore.form.axo_module"
-        label="Module"
-        variant="filled"
-        :rules="[rules.required]"
-        required
-        prepend-inner-icon="mdi-cube-outline"
-      /> -->
-
-      <!-- Class Name -->
-      <!-- <v-text-field
-        v-model="activeObjectsStore.form.axo_class_name"
-        label="Class Name"
-        variant="filled"
-        :rules="[rules.required]"
-        required
-        prepend-inner-icon="mdi-file-document-outline"
-      /> -->
-
       <!-- Alias -->
       <v-text-field
         v-model="activeObjectsStore.form.axo_alias"
@@ -37,6 +17,7 @@
         variant="filled"
         prepend-inner-icon="mdi-tag"
       />
+
       <!-- Endpoint asociado -->
       <v-select
         v-model="activeObjectsStore.form.axo_endpoint_id"
@@ -48,13 +29,34 @@
         prepend-inner-icon="mdi-cube-outline"
       />
 
-      <!-- Read Only -->
-      <!-- <v-switch
-        v-model="activeObjectsStore.form.axo_is_read_only"
-        label="Read Only"
-      /> -->
+      <!-- Servicio (guía) -->
+      <v-select
+        v-model="selectedService"
+        :items="servicesStore.services"
+        item-title="name"
+        item-value="service_id"
+        label="Service"
+        variant="filled"
+        prepend-inner-icon="mdi-cube-outline"
+        @update:model-value="onServiceChange"
+      />
 
-      <!-- Version editable (sin spinner) -->
+      <!-- Microservice -->
+    <v-select
+      v-if="selectedService" 
+      v-model="selectedMicroservice"
+      :items="microservices"
+      item-title="name"
+      item-value="microservice_id"
+      label="Microservice"
+      variant="filled"
+      prepend-inner-icon="mdi-cogs"
+      :disabled="!selectedService"
+      @update:model-value="onMicroserviceChange"
+    />
+
+
+      <!-- Version editable -->
       <v-text-field
         v-model="activeObjectsStore.form.axo_version"
         label="Version"
@@ -65,53 +67,45 @@
         type="text"
       />
 
-
-      <!-- URI -->
-      <!-- <v-text-field
-        v-model="activeObjectsStore.form.axo_uri"
-        label="URI"
+      <!-- Dependencias -->
+      <v-combobox
+        v-model="activeObjectsStore.form.axo_dependencies"
+        multiple
+        label="Dependencies"
         variant="filled"
-        prepend-inner-icon="mdi-link-variant"
-      /> -->
+        prepend-inner-icon="mdi-package-variant"
+        placeholder="Add dependencies one by one"
+        chips
+        clearable
+      />
 
-      <!-- Dependencias -->
-      <!-- Dependencias -->
-  <v-combobox
-    v-model="activeObjectsStore.form.axo_dependencies"
-    multiple
-    label="Dependencies"
-    variant="filled"
-    prepend-inner-icon="mdi-package-variant"
-    placeholder="Add dependencies one by one"
-    chips
-    clearable
-  />
+      <!-- Validación oculta del código -->
+      <v-textarea
+        v-model="activeObjectsStore.form.axo_code"
+        label="Code"
+        variant="filled"
+        :rules="[rules.codeRequired]"
+        required
+        style="display: none"
+      />
 
-  <!-- Validación oculta del código -->
-  <v-textarea
-    v-model="activeObjectsStore.form.axo_code"
-    label="Code"
-    variant="filled"
-    :rules="[rules.codeRequired]"
-    required
-    style="display: none"
-  />
+      <!-- Botón Guardar -->
+      <div class="d-flex mt-4">
+        <v-btn
+          data-step="persistency-button"
+          :loading="activeObjectsStore.loading"
+          color="#11222eff"
+          size="large"
+          type="submit"
+          variant="elevated"
+          block
+          :disabled="!isValid"
+        >
+          {{ isEditing ? 'Update' : 'Persistency' }}
+        </v-btn>
+      </div>
+    </v-form>
 
-  <!-- Botón Guardar -->
-  <div class="d-flex mt-4">
-    <v-btn
-      :loading="activeObjectsStore.loading"
-      color="#11222eff"
-      size="large"
-      type="submit"
-      variant="elevated"
-      block
-      :disabled="!isValid"
-    >
-      {{ isEditing ? 'Update' : 'Persistency' }}
-    </v-btn>
-  </div>
-</v-form>
     <!-- Snackbar -->
     <v-snackbar
       v-model="snackbar.show"
@@ -134,11 +128,20 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { useActiveObjectsStore } from '@/store/active_objects'
 import { useEndpointsStore } from '@/store/endpoints'
+import { useMicroservicesStore } from '@/store/microservices'
+import { useServicesStore } from '@/store/services'
 
 const activeObjectsStore = useActiveObjectsStore()
 const endpointsStore = useEndpointsStore()
+const microservicesStore = useMicroservicesStore()
+const servicesStore = useServicesStore()
 
 const availableEndpoints = ref([])
+const microservices = ref([]) // Microservices filtrados por service
+const selectedService = ref(null)
+const selectedServiceName = ref('')
+const selectedMicroservice = ref(null)
+
 const isValid = ref(false)
 const formRef = ref(null)
 const isEditing = ref(false)
@@ -157,12 +160,34 @@ const loadForm = (editQuery) => {
   if (editQuery) {
     isEditing.value = true
     const aoToEdit = activeObjectsStore.activeObjects.find(e => e.active_object_id === editQuery)
-    if (aoToEdit) activeObjectsStore.form = { ...aoToEdit }
+    if (aoToEdit) {
+      activeObjectsStore.form = { ...aoToEdit }
+      selectedMicroservice.value = aoToEdit.axo_microservice_id
+
+      // Asignar service correspondiente
+      const ms = microservicesStore.microservices.find(m => m.microservice_id === aoToEdit.axo_microservice_id)
+      selectedService.value = ms ? ms.service_id : null
+      selectedServiceName.value = ms ? servicesStore.services.find(s => s.service_id === ms.service_id)?.name || '' : ''
+
+      // Filtrar microservices del service
+      if (selectedService.value) {
+        microservices.value = microservicesStore.microservices
+          .filter(m => m.service_id === selectedService.value)
+          .map(m => ({
+            microservice_id: m.microservice_id,
+            name: m.name,
+            service_name: servicesStore.services.find(s => s.service_id === m.service_id)?.name || ''
+          }))
+      }
+    }
   } else {
     isEditing.value = false
     activeObjectsStore.resetForm()
     formRef.value.resetValidation()
     isValid.value = false
+    selectedMicroservice.value = null
+    selectedService.value = null
+    selectedServiceName.value = ''
   }
 }
 
@@ -170,8 +195,56 @@ const loadForm = (editQuery) => {
 onMounted(async () => {
   await endpointsStore.get_endpoints()
   availableEndpoints.value = endpointsStore.endpoints.map(e => ({ name: e.name, endpoint_id: e.endpoint_id }))
+
+  await servicesStore.get_services()
+  await microservicesStore.get_microservices()
+
+  // Inicialmente todos los microservices
+  microservices.value = microservicesStore.microservices.map(ms => {
+    const svc = servicesStore.services.find(s => s.service_id === ms.service_id)
+    return {
+      microservice_id: ms.microservice_id,
+      name: ms.name,
+      service_name: svc ? svc.name : ''
+    }
+  })
+
   loadForm(route.query.edit)
 })
+
+// --- Cambiar service seleccionado ---
+const onServiceChange = (serviceId) => {
+  selectedService.value = serviceId
+
+  // Filtrar microservices
+  const filteredMS = microservicesStore.microservices.filter(ms => ms.service_id === serviceId)
+  microservices.value = filteredMS.map(ms => ({
+    microservice_id: ms.microservice_id,
+    name: ms.name,
+    service_name: servicesStore.services.find(s => s.service_id === ms.service_id)?.name || ''
+  }))
+
+  // Limpiar microservice si no pertenece al service
+  if (!microservices.value.find(m => m.microservice_id === selectedMicroservice.value)) {
+    selectedMicroservice.value = null
+    activeObjectsStore.form.axo_microservice_id = null
+  }
+
+  const svc = servicesStore.services.find(s => s.service_id === serviceId)
+  selectedServiceName.value = svc ? svc.name : ''
+}
+
+// --- Cambiar microservice seleccionado ---
+const onMicroserviceChange = (msId) => {
+  const ms = microservices.value.find(m => m.microservice_id === msId)
+  if (ms) {
+    selectedServiceName.value = ms.service_name
+    activeObjectsStore.form.axo_microservice_id = ms.microservice_id
+  } else {
+    selectedServiceName.value = ''
+    activeObjectsStore.form.axo_microservice_id = null
+  }
+}
 
 // --- Guardar ---
 const save = async () => {
@@ -195,6 +268,9 @@ const save = async () => {
     if (!isEditing.value) {
       isValid.value = false
       activeObjectsStore.resetForm()
+      selectedService.value = null
+      selectedServiceName.value = ''
+      selectedMicroservice.value = null
     }
   } else {
     snackbar.value = { show: true, text: 'Error: ' + result.message, color: 'error' }
@@ -206,5 +282,8 @@ onBeforeUnmount(() => {
   activeObjectsStore.resetForm()
   formRef.value.resetValidation()
   isValid.value = false
+  selectedService.value = null
+  selectedServiceName.value = ''
+  selectedMicroservice.value = null
 })
 </script>

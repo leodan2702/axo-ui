@@ -82,6 +82,7 @@
                 </v-text-field>           
                 <div class="d-flex flex-column mt-4 w-100 justify-center align-center">
                     <v-btn
+                    data-step="register-button"
                     :loading="isLoading"
                     :disabled="isLoading"
                     color="#06141B"
@@ -89,7 +90,7 @@
                     type="submit" >Sign Up</v-btn>
                     <div>
                         <v-text class="text-disabled">Already on Axo?</v-text>
-                        <router-link to="/" class="text-decoration-none font-weight-bold"
+                        <router-link data-step="login-button" to="/" class="text-decoration-none font-weight-bold"
                         style="color: #06141B"
                         >
                         Login

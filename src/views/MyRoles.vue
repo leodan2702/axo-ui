@@ -8,19 +8,19 @@
 
           <!-- Botón New Role con estilo personalizado -->
           <router-link to="/create-role">
-            <v-btn class="btn-create-role">
+            <v-btn class="btn-create-role" data-step="create-role-button">
               <v-icon left>mdi-plus</v-icon>
               New Role
             </v-btn>
           </router-link>
 
           <!-- Barra de búsqueda -->
-          <SearchBar @update:search="handleSearch" class="ml-4"/>
+          <SearchBar @update:search="handleSearch" class="ml-4" data-step="search-roles"/>
         </div>
 
         <v-divider></v-divider>
 
-        <div class="mt-5 pa-5">
+        <div class="mt-5 pa-5" data-step="roles-management-section">
           <CardVariant
             v-for="(role, index) in filteredRoles"
             :key="role.role_id"

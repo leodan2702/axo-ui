@@ -8,19 +8,19 @@
 
           <!-- Botón New Microservice -->
           <router-link to="/create-microservice">
-            <v-btn class="btn-create-microservice">
+            <v-btn class="btn-create-microservice" data-step="create-microservice-button">
               <v-icon left>mdi-plus</v-icon>
               New Microservice
             </v-btn>
           </router-link>
 
           <!-- Barra de búsqueda -->
-          <SearchBar @update:search="handleSearch" class="ml-4" />
+          <SearchBar @update:search="handleSearch" class="ml-4"  data-step="search-microservice-button"/>
         </div>
 
         <v-divider></v-divider>
 
-        <div class="mt-5 pa-5">
+        <div class="mt-5 pa-5" data-step="microservices-management-section">
           <CardVariant
             v-for="(ms, index) in filteredMicroservices"
             :key="ms.service_id"

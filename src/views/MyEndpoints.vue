@@ -8,19 +8,19 @@
 
           <!-- Botón New Endpoint -->
           <router-link to="/create-endpoint">
-            <v-btn class="btn-create-endpoint">
+            <v-btn class="btn-create-endpoint" data-step="new-endpoint-button">
               <v-icon left>mdi-plus</v-icon>
               New Endpoint
             </v-btn>
           </router-link>
 
           <!-- Barra de búsqueda -->
-          <SearchBar @update:search="handleSearch" class="ml-4" />
+          <SearchBar @update:search="handleSearch" class="ml-4" data-step="search-endpoint"/>
         </div>
 
         <v-divider></v-divider>
 
-        <div class="mt-5 pa-5">
+        <div class="mt-5 pa-5" data-step="endpoints-management-section">
           <CardVariant
             v-for="(ep, index) in filteredEndpoints"
             :key="ep.endpoint_id"
@@ -47,12 +47,12 @@
         <v-card>
           <v-card-title class="text-h6">Confirm Deletion</v-card-title>
           <v-card-text>
-            Are you sure you want to delete the endpoint "{{ dialog.endpoint?.name }}"?
+            Are you sure you want to detach the endpoint "{{ dialog.endpoint?.name }}"?
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn text color="grey" @click="dialog.show = false">Cancel</v-btn>
-            <v-btn text color="red" @click="confirmDelete">Delete</v-btn>
+            <v-btn text color="red" @click="confirmDelete">Detach</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -112,11 +112,11 @@ const openDeleteDialog = (ep, index) => {
 const confirmDelete = async () => {
   if (!dialog.value.endpoint) return
   try {
-    const result = await endpointsStore.delete_endpoint(dialog.value.endpoint.endpoint_id)
+    const result = await endpointsStore.detach_endpoint(dialog.value.endpoint.endpoint_id)
     if (result.color === "success") {
-      snackbar.value = { show: true, text: `Endpoint deleted: ${dialog.value.endpoint.name}`, color: "success" }
+      snackbar.value = { show: true, text: `Endpoint detached: ${dialog.value.endpoint.name}`, color: "success" }
     } else {
-      snackbar.value = { show: true, text: "Failed to delete: " + result.message, color: "error" }
+      snackbar.value = { show: true, text: "Failed to detach: " + result.message, color: "error" }
     }
   } catch (e) {
     console.error(e)

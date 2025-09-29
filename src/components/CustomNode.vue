@@ -5,8 +5,10 @@
     <span v-else class="fallback">⚙️</span>
 
     <!-- Nombre (opcional) -->
-    <div class="node-label">{{ data.label }}</div>
-
+    <div class="node-label">
+      {{ data.label }}
+      <span v-if="data.method" class="node-method">.{{ data.method }}()</span>
+    </div>
     <!-- Handles de conexión -->
     <Handle style="background:#3b82f6" type="target" :position="Position.Left" />
     <Handle style="background:#3b82f6" type="source" :position="Position.Right" />
@@ -26,7 +28,7 @@ defineProps({
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: transparent; 
+  background: transparent;
   border: none;
 }
 
@@ -34,6 +36,7 @@ defineProps({
   width: 60px;
   height: 60px;
   object-fit: contain;
+  transition: all 0.3s ease-in-out;
 }
 
 .node-label {
@@ -47,7 +50,6 @@ defineProps({
   font-size: 30px;
 }
 
-
 /* Quitar zoom feo al recuadro */
 .vue-flow__node.selected .custom-node {
   outline: none;
@@ -55,10 +57,23 @@ defineProps({
   transform: none;
 }
 
-/* Aplica zoom + glow SOLO al ícono */
+
 .vue-flow__node.selected .custom-node .node-icon {
   transform: scale(1.15);
   filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.7));
   transition: all 0.2s ease-in-out;
+}
+
+.node-running .vue-flow__node .custom-node .node-icon {
+  animation: pulseGlow 1.5s infinite;
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.7));
+  transition: all 0.2s ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0% { filter: drop-shadow(0 0 0px rgba(37, 99, 235, 0.6)); transform: scale(1); }
+  50% { filter: drop-shadow(0 0 16px rgba(37, 99, 235, 1)); transform: scale(1.2); }
+  100% { filter: drop-shadow(0 0 0px rgba(37, 99, 235, 0.6)); transform: scale(1); }
 }
 </style>

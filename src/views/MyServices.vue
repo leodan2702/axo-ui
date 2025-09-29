@@ -8,19 +8,19 @@
 
           <!-- Botón New Service -->
           <router-link to="/create-service">
-            <v-btn class="btn-create-service">
+            <v-btn class="btn-create-service" data-step="create-service-button">
               <v-icon left>mdi-plus</v-icon>
               New Service
             </v-btn>
           </router-link>
 
           <!-- Barra de búsqueda -->
-          <SearchBar @update:search="handleSearch" class="ml-4" />
+          <SearchBar @update:search="handleSearch" class="ml-4" data-step="search-service" />
         </div>
 
         <v-divider></v-divider>
 
-        <div class="mt-5 pa-5">
+        <div class="mt-5 pa-5" data-step="services-management-section" >
           <CardVariant
             v-for="(service, index) in filteredServices"
             :key="service.service_id"
