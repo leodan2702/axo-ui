@@ -2,7 +2,7 @@
   <v-main class="pa-6" style="background-color: #f5f5f5; min-height: 100vh;">
     <v-container fluid>
       <h1 class="mb-6">Home</h1>
-      <v-row dense>
+      <v-row dense data-step="main-dashboard">
         <!-- Roles -->
         <v-col cols="12" sm="6" md="2">
           <v-card class="pa-6" color="#3f51b5" dark>

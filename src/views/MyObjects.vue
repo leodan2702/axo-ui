@@ -3,24 +3,25 @@
     <v-container>
       <div class="d-flex flex-column">
         <div class="d-flex align-center mb-4">
-          <h1>Active Objects</h1>
+          <h1 data-step="objects-menu-item">Active Objects</h1> <!-- Agregado -->
           <v-spacer></v-spacer>
 
           <!-- Botón New Active Object -->
           <router-link to="/create-object">
-            <v-btn class="btn-create">
+            <v-btn class="btn-create" data-step="new-active-object-button"> <!-- Agregado -->
               <v-icon left>mdi-plus</v-icon>
               New Active Object
             </v-btn>
           </router-link>
 
           <!-- Barra de búsqueda -->
-          <SearchBar @update:search="handleSearch" class="ml-4" />
+          <SearchBar @update:search="handleSearch" class="ml-4" data-step="search-active-object"/>
         </div>
 
         <v-divider></v-divider>
 
-        <div class="mt-5 pa-5">
+        <!-- Sección de gestión -->
+        <div class="mt-5 pa-5" data-step="objects-management-section"> <!-- Agregado -->
           <CardVariant
             v-for="(ao, index) in filteredActiveObjects"
             :key="ao.active_object_id"
@@ -30,11 +31,11 @@
             :image="OA"
           >
             <template #button>
-              <v-btn small class="btn-edit" @click="handleEdit(ao)">
+              <v-btn small class="btn-edit" @click="handleEdit(ao)" data-step="edit-object-button"> <!-- Agregado -->
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
 
-              <v-btn class="btn-delete" variant="flat" @click="openDeleteDialog(ao, index)">
+              <v-btn class="btn-delete" variant="flat" @click="openDeleteDialog(ao, index)" data-step="delete-object-button"> <!-- Agregado -->
                 <v-icon left>mdi-delete</v-icon>
               </v-btn>
             </template>
@@ -72,7 +73,6 @@ import { useActiveObjectsStore } from "@/store/active_objects"
 import { ref, onMounted, computed } from "vue"
 import router from "@/router"
 import OA from "@/assets/axo_OA_assets.png"
-
 
 const activeObjectsStore = useActiveObjectsStore()
 const currentSearch = ref("")

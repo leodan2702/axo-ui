@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import { load } from "webfontloader";
 
 const CRYPTOMESH_URL = `http://localhost:19000`;
 const CRYPTOMESH_API_VERSION = `v1`;
@@ -110,5 +111,53 @@ export const useEndpointsStore = defineStore('endpoints', () => {
     }
   }
 
-  return { endpoints, get_endpoints, create_endpoint, update_endpoint, delete_endpoint, form, loading, resetForm };
+  // Crear + desplegar endpoint
+  async function deploy_endpoint() {
+    loading.value = true;
+    try {
+      const deployResp = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/deploy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form.value)
+      });
+
+      if (!deployResp.ok) throw new Error('Failed to deploy endpoint');
+      const deployed = await deployResp.json();
+
+      endpoints.value.push(deployed);
+
+      resetForm();
+      return { color: "success", data: deployed };
+
+    } catch (error) {
+      console.error('Error', error);
+      return { color: "error", message: error?.message ?? "Unknown error" };
+    } finally {
+      loading.value = false;
+    }
+  }
+
+
+
+  // detener o desconectar un endpoint
+  async function detach_endpoint(endpoint_id){
+    loading.value = true;
+    try{
+      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/detach/${endpoint_id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to detach endpoint');
+      endpoints.value = endpoints.value.filter(e => e.endpoint_id !== endpoint_id);
+
+      return { color: "success" };
+    } catch (error) {
+      console.error('Error', error);
+      const message = error?.message ?? "Unknown error, please contact support@axo.mx";
+      return { color: "error", message };
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  return { endpoints, get_endpoints, create_endpoint, update_endpoint, delete_endpoint, form, loading, resetForm, deploy_endpoint, detach_endpoint };
 });

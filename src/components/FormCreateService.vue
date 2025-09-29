@@ -62,6 +62,7 @@
       <!-- Botón Guardar -->
       <div class="d-flex mt-4">
         <v-btn
+          data-step="save-service-button"
           :loading="servicesStore.loading"
           color="#11222eff"
           size="large"

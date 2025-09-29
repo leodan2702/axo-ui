@@ -14,6 +14,7 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
     axo_class_name: '',
     axo_version: 0,
     axo_endpoint_id: '',
+    axo_microservice_id: '',
     axo_dependencies: [], // Aquí almacenaremos un array limpio
     axo_uri: '',
     axo_alias: '',
@@ -32,6 +33,7 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
       axo_class_name: '',
       axo_version: 0,
       axo_endpoint_id: '',
+      axo_microservice_id: '',
       axo_dependencies: [],
       axo_uri: '',
       axo_alias: '',

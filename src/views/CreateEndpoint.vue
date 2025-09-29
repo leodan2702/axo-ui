@@ -11,8 +11,8 @@
         <v-divider></v-divider>
 
         <!-- Contenedor centrado del formulario -->
-        <v-sheet class="mt-5 d-flex justify-center" style="width: 100%;">
-          <FormCreateEndpoint />
+        <v-sheet class="mt-5 d-flex justify-center" style="width: 100%;" >
+          <FormCreateEndpoint data-step="endpoint-form"/>
         </v-sheet>
   
     </v-container>                  
