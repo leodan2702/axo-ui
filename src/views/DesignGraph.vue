@@ -114,7 +114,7 @@ import SidePanel from "../components/SidePanel.vue"
 import CustomNode from "../components/CustomNode.vue"
 import OAConfigForm from "@/components/OAConfigForm.vue"
 import BucketForm from "@/components/BucketForm.vue"
-
+import { v4 as uuidv4 } from "uuid"
 import { useChoreographyStore } from "@/store/run_choreograpy"
 
 const nodeTypes = { custom: CustomNode }
@@ -221,7 +221,7 @@ const onDrop = async (event) => {
   })
 
   const newNode = {
-    id: `${data.active_object_id}-${data.method || Date.now()}`,
+    id: `${data.active_object_id}-${data.method}-${uuidv4()}`,
     type: "custom",
     position,
     data: { label: data.alias || data.class_name, method: data.method, icon: OA},
