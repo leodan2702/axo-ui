@@ -6,6 +6,7 @@
 
     <!-- Formulario -->
     <v-form
+      data-step="create-service-button"
       ref="formRef"
       v-model="isValid"
       fast-fail
@@ -24,7 +25,7 @@
 
       <!-- Selección de servicio -->
       <v-select
-        v-model="selectedServiceId"
+        v-model="microservicesStore.form.service_id"
         :items="availableServices"
         item-title="name"
         item-value="service_id"
@@ -60,22 +61,10 @@
         </v-col>
       </v-row>
 
-      <!-- Funciones asociadas -->
-      <v-select
-        v-model="selectedFunctions"
-        :items="availableFunctions"
-        item-title="name"
-        item-value="function_id"
-        label="Functions"
-        variant="filled"
-        multiple
-        chips
-        prepend-inner-icon="mdi-function"
-      />
-
       <!-- Botón Guardar -->
       <div class="d-flex mt-4">
         <v-btn
+        data-step="save-microservice-button"
           :loading="microservicesStore.loading"
           color="#11222eff"
           size="large"
@@ -109,21 +98,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, onBeforeRouteUpdate } from 'vue-router'
 import { useMicroservicesStore } from '@/store/microservices'
 import { useServicesStore } from '@/store/services'
-import { useFunctionsStore } from '@/store/functions'
 
 const microservicesStore = useMicroservicesStore()
 const servicesStore = useServicesStore()
-const functionsStore = useFunctionsStore()
 
-const selectedServiceId = ref('')
-const selectedFunctions = ref([])
 const availableServices = ref([])
-const availableFunctions = ref([])
-
 const isValid = ref(false)
 const formRef = ref(null)
 const isEditing = ref(false)
@@ -140,15 +123,6 @@ const rules = {
 
 const route = useRoute()
 
-// --- Sincronizar selectedServiceId y selectedFunctions con form ---
-watch(selectedServiceId, (newId) => {
-  microservicesStore.form.service_id = newId
-})
-
-watch(selectedFunctions, (newFuncs) => {
-  microservicesStore.form.functions = newFuncs
-})
-
 // --- Cargar formulario ---
 const loadForm = (editQuery) => {
   if (editQuery) {
@@ -156,14 +130,10 @@ const loadForm = (editQuery) => {
     const msToEdit = microservicesStore.microservices.find(m => m.microservice_id === editQuery)
     if (msToEdit) {
       microservicesStore.form = { ...msToEdit }
-      selectedServiceId.value = msToEdit.service_id || ''
-      selectedFunctions.value = msToEdit.functions || []
     }
   } else {
     isEditing.value = false
     microservicesStore.resetForm()
-    selectedServiceId.value = ''
-    selectedFunctions.value = []
     formRef.value.resetValidation()
     isValid.value = false
   }
@@ -173,10 +143,6 @@ const loadForm = (editQuery) => {
 onMounted(async () => {
   await servicesStore.get_services()
   availableServices.value = servicesStore.services.map(s => ({ service_id: s.service_id, name: s.name }))
-
-  await functionsStore.get_functions()
-  availableFunctions.value = functionsStore.functions.map(f => ({ function_id: f.function_id, name: f.name }))
-
   loadForm(route.query.edit)
 })
 
@@ -188,8 +154,6 @@ onBeforeRouteUpdate((to) => {
 // --- Al desmontar ---
 onBeforeUnmount(() => {
   microservicesStore.resetForm()
-  selectedServiceId.value = ''
-  selectedFunctions.value = []
   formRef.value.resetValidation()
   isValid.value = false
 })
@@ -212,13 +176,10 @@ const save = async () => {
       color: 'success'
     }
 
-    formRef.value.resetValidation()
-
     if (!isEditing.value) {
-      isValid.value = false
       microservicesStore.resetForm()
-      selectedServiceId.value = ''
-      selectedFunctions.value = []
+      isValid.value = false
+      formRef.value.resetValidation()
     }
   } else {
     snackbar.value = { show: true, text: 'Error: ' + result.message, color: 'error' }

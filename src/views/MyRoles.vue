@@ -3,38 +3,41 @@
     <v-container>
       <div class="d-flex flex-column">
         <div class="d-flex align-center mb-4">
-          <h1>Endpoints</h1>
+          <h1>Roles</h1>
           <v-spacer></v-spacer>
 
-          <!-- Botón New Endpoint -->
-          <router-link to="/create-endpoint">
-            <v-btn class="btn-create-endpoint">
+          <!-- Botón New Role con estilo personalizado -->
+          <router-link to="/create-role">
+            <v-btn class="btn-create-role" data-step="create-role-button">
               <v-icon left>mdi-plus</v-icon>
-              New Endpoint
+              New Role
             </v-btn>
           </router-link>
 
           <!-- Barra de búsqueda -->
-          <SearchBar @update:search="handleSearch" class="ml-4" />
+          <SearchBar @update:search="handleSearch" class="ml-4" data-step="search-roles"/>
         </div>
 
         <v-divider></v-divider>
 
-        <div class="mt-5 pa-5">
+        <div class="mt-5 pa-5" data-step="roles-management-section">
           <CardVariant
-            v-for="(ep, index) in filteredEndpoints"
-            :key="ep.endpoint_id"
-            :title="`Endpoint: ${ep.name}`"
-            :description="`Image: ${ep.image} | CPU: ${ep.resources.cpu} | RAM: ${ep.resources.ram}`"
-            :autor="ep.created_at"
-            :image="endpoint"
+            v-for="(role, index) in filteredRoles"
+            :key="role.role_id"
+            :title="`Role: ${role.name}`"
+            :description="role.description"
+            :permissions="role.permissions"
+            :autor="role.created_at"
+            :image="roles"
           >
             <template #button>
-              <v-btn small class="btn-edit" @click="handleEdit(ep)">
+              <!-- Botón Editar con estilo personalizado -->
+              <v-btn small class="btn-edit" @click="handleEdit(role)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
 
-              <v-btn class="btn-delete" variant="flat" @click="openDeleteDialog(ep, index)">
+              <!-- Botón Eliminar -->
+              <v-btn class="btn-delete" variant="flat" @click="openDeleteDialog(role, index)">
                 <v-icon left>mdi-delete</v-icon>
               </v-btn>
             </template>
@@ -47,7 +50,7 @@
         <v-card>
           <v-card-title class="text-h6">Confirm Deletion</v-card-title>
           <v-card-text>
-            Are you sure you want to delete the endpoint "{{ dialog.endpoint?.name }}"?
+            Are you sure you want to delete the role "{{ dialog.role?.name }}"?
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -58,7 +61,7 @@
       </v-dialog>
 
       <!-- Snackbar para notificaciones -->
-      <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
+      <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="2000">
         {{ snackbar.text }}
       </v-snackbar>
     </v-container>
@@ -68,26 +71,25 @@
 <script setup>
 import SearchBar from "@/components/SearchBar.vue"
 import CardVariant from "@/components/CardVariant.vue"
-import { useEndpointsStore } from "@/store/endpoints"
+import { useRolesStore } from "@/store/roles"
 import { ref, onMounted, computed } from "vue"
 import router from "@/router"
-import endpoint from "@/assets/axo_endpoint_assets.png"
+import roles from "@/assets/axo_role_assets.png"
 
-const endpointsStore = useEndpointsStore()
+const rolesStore = useRolesStore()
 const currentSearch = ref("")
 
 // Snackbar
 const snackbar = ref({ show: false, text: "", color: "success" })
 
 onMounted(async () => {
-  await endpointsStore.get_endpoints()
+  await rolesStore.get_roles()
 })
 
-// Filtro por nombre de endpoint
-const filteredEndpoints = computed(() => {
-  if (!currentSearch.value) return endpointsStore.endpoints
-  return endpointsStore.endpoints.filter(ep =>
-    ep.name.toLowerCase().includes(currentSearch.value.toLowerCase())
+const filteredRoles = computed(() => {
+  if (!currentSearch.value) return rolesStore.roles
+  return rolesStore.roles.filter(r =>
+    r.name.toLowerCase().includes(currentSearch.value.toLowerCase())
   )
 })
 
@@ -95,26 +97,25 @@ const handleSearch = (search) => {
   currentSearch.value = search
 }
 
-// Editar endpoint
-const handleEdit = (ep) => {
-  router.push({ path: `/create-endpoint`, query: { edit: ep.endpoint_id } })
+const handleEdit = (role) => {
+  router.push({ path: `/create-role`, query: { edit: role.role_id } })
 }
 
 // Dialog de eliminación
-const dialog = ref({ show: false, endpoint: null, index: null })
+const dialog = ref({ show: false, role: null, index: null })
 
-const openDeleteDialog = (ep, index) => {
-  dialog.value.endpoint = ep
+const openDeleteDialog = (role, index) => {
+  dialog.value.role = role
   dialog.value.index = index
   dialog.value.show = true
 }
 
 const confirmDelete = async () => {
-  if (!dialog.value.endpoint) return
+  if (!dialog.value.role) return
   try {
-    const result = await endpointsStore.delete_endpoint(dialog.value.endpoint.endpoint_id)
+    const result = await rolesStore.delete_role(dialog.value.role.role_id)
     if (result.color === "success") {
-      snackbar.value = { show: true, text: `Endpoint deleted: ${dialog.value.endpoint.name}`, color: "success" }
+      snackbar.value = { show: true, text: `Role deleted: ${dialog.value.role.name}`, color: "success" }
     } else {
       snackbar.value = { show: true, text: "Failed to delete: " + result.message, color: "error" }
     }
@@ -133,27 +134,43 @@ const confirmDelete = async () => {
   background-color: #11212d;
   color: white;
   padding: 5px 15px;
+  border: none;
   border-radius: 5px;
   cursor: pointer;
   margin-left: 10px;
 }
 
-/* Botón Crear Nuevo Endpoint */
-.btn-create-endpoint {
+.btn-edit:hover {
+  background-color: #000000;
+}
+
+/* Botón Crear Nuevo Role */
+.btn-create-role {
   background-color: #11212d;
   color: white;
   padding: 5px 15px;
+  border: none;
   border-radius: 5px;
   cursor: pointer;
   margin-right: 10px;
+}
+
+.btn-create-role:hover {
+  background-color: #000000;
 }
 
 .btn-delete {
   background-color: #d00000;
   color: white;
   padding: 5px 15px;
+  border: none;
   border-radius: 5px;
   cursor: pointer;
   margin-left: 10px;
 }
+
+.btn-delete:hover {
+  background-color: #9d0000;
+}
+
 </style>

@@ -8,19 +8,19 @@
 
           <!-- Botón New Service -->
           <router-link to="/create-service">
-            <v-btn class="btn-create-service">
+            <v-btn class="btn-create-service" data-step="create-service-button">
               <v-icon left>mdi-plus</v-icon>
               New Service
             </v-btn>
           </router-link>
 
           <!-- Barra de búsqueda -->
-          <SearchBar @update:search="handleSearch" class="ml-4" />
+          <SearchBar @update:search="handleSearch" class="ml-4" data-step="search-service" />
         </div>
 
         <v-divider></v-divider>
 
-        <div class="mt-5 pa-5">
+        <div class="mt-5 pa-5" data-step="services-management-section" >
           <CardVariant
             v-for="(service, index) in filteredServices"
             :key="service.service_id"
@@ -57,7 +57,7 @@
       </v-dialog>
 
       <!-- Snackbar para notificaciones -->
-      <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
+      <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="2000">
         {{ snackbar.text }}
       </v-snackbar>
     </v-container>
@@ -85,7 +85,7 @@ onMounted(async () => {
 const filteredServices = computed(() => {
   if (!currentSearch.value) return servicesStore.services
   return servicesStore.services.filter(service =>
-    service.service_id.toLowerCase().includes(currentSearch.value.toLowerCase())
+    service.name.toLowerCase().includes(currentSearch.value.toLowerCase())
   )
 })
 

@@ -62,6 +62,7 @@
       <!-- Botón Guardar -->
       <div class="d-flex mt-4">
         <v-btn
+          data-step="save-service-button"
           :loading="servicesStore.loading"
           color="#11222eff"
           size="large"
@@ -79,7 +80,7 @@
     <v-snackbar
       v-model="snackbar.show"
       :color="snackbar.color"
-      timeout="3000"
+      timeout="2000"
       location="bottom center"
     >
       {{ snackbar.text }}

@@ -8,24 +8,24 @@
 
           <!-- Botón New Security Policy -->
           <router-link to="/create-security-policy">
-            <v-btn class="btn-create-policy">
+            <v-btn class="btn-create-policy" data-step="create-policy-button">
               <v-icon left>mdi-plus</v-icon>
               New Security Policy
             </v-btn>
           </router-link>
 
           <!-- Barra de búsqueda -->
-          <SearchBar @update:search="handleSearch" class="ml-4"/>
+          <SearchBar @update:search="handleSearch" class="ml-4" data-step="search-politicas"/>
         </div>
 
         <v-divider></v-divider>
 
-        <div class="mt-5 pa-5">
+        <div class="mt-5 pa-5" data-step="policies-management-section">
           <CardVariant
             v-for="(policy, index) in filteredPolicies"
             :key="policy.sp_id"
             :title="`Policy: ${policy.name}`"
-            :description="`Roles: ${policy.roles.name} | Requires Auth: ${policy.requires_authentication}`"
+            :description="`Roles: ${getRoleNames(policy)} | Requires Auth: ${policy.requires_authentication}`"
             :autor="policy.created_at"
             :image="sp"
           >
@@ -60,7 +60,7 @@
       </v-dialog>
 
       <!-- Snackbar para notificaciones -->
-      <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
+      <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="2000">
         {{ snackbar.text }}
       </v-snackbar>
     </v-container>
@@ -71,26 +71,43 @@
 import SearchBar from "@/components/SearchBar.vue"
 import CardVariant from "@/components/CardVariant.vue"
 import { useSecurityPoliciesStore } from "@/store/security_policy"
+import { useRolesStore } from "@/store/roles"
 import { ref, onMounted, computed } from "vue"
 import router from "@/router"
 import sp from "@/assets/axo_securityPolices_assets.png"
 
 const policiesStore = useSecurityPoliciesStore()
+const rolesStore = useRolesStore()
 const currentSearch = ref("")
 
 // Snackbar
 const snackbar = ref({ show: false, text: "", color: "success" })
 
+// Cargar policies y roles
 onMounted(async () => {
+  await rolesStore.get_roles()
   await policiesStore.get_policies()
 })
 
+// Función para obtener nombres de roles a partir de role_id
+const getRoleNames = (policy) => {
+  return policy.roles
+    .map(roleId => rolesStore.roles.find(r => r.role_id === roleId)?.name || roleId)
+    .join(", ")
+}
+
+// Filtrado por nombre de policy o nombres de roles
 const filteredPolicies = computed(() => {
   if (!currentSearch.value) return policiesStore.policies
-  return policiesStore.policies.filter(p =>
-    (p.sp_id ?? "").toLowerCase().includes(currentSearch.value.toLowerCase()) ||
-    p.roles.some(r => r.toLowerCase().includes(currentSearch.value.toLowerCase()))
-  )
+  return policiesStore.policies.filter(policy => {
+    const search = currentSearch.value.toLowerCase()
+    const policyNameMatch = policy.name.toLowerCase().includes(search)
+    const rolesMatch = policy.roles.some(roleId => {
+      const role = rolesStore.roles.find(r => r.role_id === roleId)
+      return role?.name.toLowerCase().includes(search)
+    })
+    return policyNameMatch || rolesMatch
+  })
 })
 
 const handleSearch = (search) => {

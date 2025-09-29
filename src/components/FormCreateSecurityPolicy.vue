@@ -37,7 +37,7 @@
       />
 
       <!-- Botón Guardar -->
-      <div class="d-flex mt-4">
+      <div class="d-flex mt-4" data-step="save-policy-button">
         <v-btn
           :loading="securityPoliciesStore.loading"
           color="#11222eff"
@@ -56,7 +56,7 @@
     <v-snackbar
       v-model="snackbar.show"
       :color="snackbar.color"
-      timeout="3000"
+      timeout="2000"
       location="bottom center"
     >
       {{ snackbar.text }}
@@ -86,7 +86,7 @@ const formRef = ref(null)
 const snackbar = ref({ show: false, text: '', color: 'success' })
 
 const rules = {
-  required: v => !!v || 'This field is required',
+  required: v => !!v || 'Field required',
   minOne: v => (v && v.length > 0) || 'Select at least one role'
 }
 
@@ -147,14 +147,19 @@ const save = async () => {
       color: 'success'
     }
 
-    formRef.value.resetValidation()
     if (!isEditing.value) {
-      isValid.value = false
       securityPoliciesStore.resetForm()
+      nextTick(() => {
+        formRef.value.resetValidation()
+        isValid.value = false
+      })
+    } else {
+      nextTick(() => formRef.value.resetValidation())
     }
   } else {
     snackbar.value = { show: true, text: 'Error: ' + result.message, color: 'error' }
   }
 }
+
 </script>
 

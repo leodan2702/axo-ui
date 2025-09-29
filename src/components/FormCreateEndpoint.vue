@@ -22,9 +22,10 @@
         prepend-inner-icon="mdi-api"
       />
 
-      <!-- Imagen --> 
-      <v-text-field
+      <!-- Imagen -->
+      <v-select
         v-model="endpointsStore.form.image"
+        :items="availableImages"
         label="Image"
         variant="filled"
         :rules="[rules.required]"
@@ -57,9 +58,9 @@
         </v-col>
       </v-row>
 
-      <!-- Security Policy (sp_id) -->
+      <!-- Security Policy -->
       <v-select
-        v-model="endpointsStore.form.sp_id"
+        v-model="endpointsStore.form.security_policy"
         :items="availablePolicies"
         item-title="name"
         item-value="sp_id"
@@ -73,6 +74,7 @@
       <!-- Botón Guardar -->
       <div class="d-flex mt-4">
         <v-btn
+          data-step="save-endpoint-button"
           :loading="endpointsStore.loading"
           color="#11222eff"
           size="large"
@@ -90,7 +92,7 @@
     <v-snackbar
       v-model="snackbar.show"
       :color="snackbar.color"
-      timeout="3000"
+      timeout="2000"
       location="bottom center"
     >
       {{ snackbar.text }}
@@ -106,7 +108,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, onBeforeRouteUpdate } from 'vue-router'
 import { useEndpointsStore } from '@/store/endpoints'
 import { useSecurityPoliciesStore } from '@/store/security_policy'
@@ -114,7 +116,6 @@ import { useSecurityPoliciesStore } from '@/store/security_policy'
 const endpointsStore = useEndpointsStore()
 const securityPoliciesStore = useSecurityPoliciesStore()
 
-const selectedSpId = ref('')
 const availablePolicies = ref([])
 
 const isValid = ref(false)
@@ -133,7 +134,6 @@ const rules = {
 
 const route = useRoute()
 
-
 // --- Cargar formulario ---
 const loadForm = (editQuery) => {
   if (editQuery) {
@@ -141,15 +141,19 @@ const loadForm = (editQuery) => {
     const endpointToEdit = endpointsStore.endpoints.find(e => e.endpoint_id === editQuery)
     if (endpointToEdit) {
       endpointsStore.form = { ...endpointToEdit }
-      selectedSpId.value = endpointToEdit.security_policy || ''
+      endpointsStore.form.security_policy = endpointToEdit.security_policy || ''
     }
   } else {
     isEditing.value = false
     endpointsStore.resetForm()
-    formRef.value.resetValidation()
+    formRef.value?.resetValidation()
     isValid.value = false
   }
 }
+
+const availableImages = ref([
+  "nachocode/axo:endpoint-0.0.3a1"
+])
 
 // --- Al montar ---
 onMounted(async () => {
@@ -169,39 +173,37 @@ onBeforeRouteUpdate((to) => {
 // --- Al desmontar ---
 onBeforeUnmount(() => {
   endpointsStore.resetForm()
-  selectedSpId.value = ''
-  formRef.value.resetValidation()
+  formRef.value?.resetValidation()
   isValid.value = false
 })
 
 // --- Guardar ---
 const save = async () => {
-  let result
+  let result;
   if (isEditing.value) {
-    result = await endpointsStore.update_endpoint(route.query.edit)
+    // Actualizar endpoint existente
+    result = await endpointsStore.update_endpoint(route.query.edit);
   } else {
-    result = await endpointsStore.create_endpoint()
+    // Crear y desplegar endpoint en un solo paso
+    result = await endpointsStore.deploy_endpoint();
   }
 
-  if (result.color === 'success') {
-    snackbar.value = {
-      show: true,
-      text: isEditing.value
-        ? `Endpoint updated successfully: ${result.data.name}`
-        : `Endpoint created successfully: ${result.data.name}`,
-      color: 'success'
-    }
+  snackbar.value = {
+    show: true,
+    text: result.color === "success"
+      ? `Endpoint deployed successfully: ${result.data.name}`
+      : `Error during deploy. Endpoint created: ${result.data?.name ?? ''}. ${result.message}`,
+    color: result.color === "success" ? "success" : "error"
+  };
 
-    formRef.value.resetValidation()
-
+  if (result.color === "success" || result.data) {
+    formRef.value.resetValidation();
     if (!isEditing.value) {
       isValid.value = false
       endpointsStore.resetForm()
-      selectedSpId.value = ''
     }
   } else {
     snackbar.value = { show: true, text: 'Error: ' + result.message, color: 'error' }
   }
 }
 </script>
-

@@ -9,12 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@globalhive/vuejs-tour": "^2.3.8",
     "@mdi/font": "^5.9.55",
     "@vue-flow/core": "^1.46.4",
     "monaco-editor": "^0.52.2",
     "monaco-editor-vue3": "^0.1.10",
     "pinia": "^2.2.4",
     "roboto-fontface": "*",
+    "uuid": "^13.0.0",
     "vite-plugin-vuetify": "^2.0.4",
     "vue": "^3.5.12",
     "vue-router": "^4.4.5",
