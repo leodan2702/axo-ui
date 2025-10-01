@@ -96,6 +96,9 @@ export const useUserStore = defineStore('users',() => {
         user.value = null;
     }
     return { login, register, logout, user }
+},
+{
+    persist: true
 })
     
 

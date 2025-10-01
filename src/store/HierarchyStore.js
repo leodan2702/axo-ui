@@ -4,6 +4,7 @@ import { ref } from "vue"
 import OA from "@/assets/axo_OA_assets.png"
 import micro from "@/assets/axo_microser_assets.png"
 import icon_ser from "@/assets/axo_service_assets.png"
+import ao_function from "@/assets/axo_function.png"
 
 const CRYPTOMESH_URL = `http://localhost:19000`
 const CRYPTOMESH_API_VERSION = `v1`
@@ -29,7 +30,7 @@ function mapHierarchyToTree(data) {
                     label: fn.name,
                     type: "function",
                     draggable: true,
-                    icon: OA,
+                    icon: ao_function,
                     functionData: fn,
                     parentAO: ao
                 }))

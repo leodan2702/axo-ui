@@ -94,7 +94,7 @@ const emit = defineEmits(["save", "close"])
 
 const form = reactive({
   sink_bucket_id: "",
-  sink_key: "",
+  // sink_key: "",  
 })
 
 watch(
@@ -102,7 +102,7 @@ watch(
   (bucket) => {
     if (!bucket) return
     form.sink_bucket_id = bucket.sink_bucket_id ?? ""
-    form.sink_key = bucket.sink_key ?? ""
+    // form.sink_key = bucket.sink_key ?? "" 
   },
   { immediate: true }
 )
@@ -110,7 +110,7 @@ watch(
 const saveConfig = () => {
   emit("save", {
     sink_bucket_id: form.sink_bucket_id,
-    sink_key: form.sink_key,
+    // sink_key: form.sink_key,
   })
 }
 </script>
