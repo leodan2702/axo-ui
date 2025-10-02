@@ -2,8 +2,9 @@ import { defineStore } from "pinia"
 import { ref } from "vue"
 import yaml from "js-yaml"   // 👈 asegúrate de importar yaml aquí también
 
-const SHIELDX_URL = `http://localhost:20000`
-const API_VERSION = `v1`
+// const SHIELDX_URL = `const SHIELDX_URL =  ihttp://localhost:20000`
+const SHIELDX_URL =  import.meta.env.VITE_SHIELDX_URL || `http://localhost:20000`
+const API_VERSION = import.meta.env.VITE_API_VERSION || `v1`
 
 export const useChoreographyStore = defineStore("choreography", () => {
   const loading = ref(false)
