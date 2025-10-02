@@ -7,10 +7,11 @@
       
       <!-- Name -->
       <v-text-field
+        counter="32"
         v-model="securityPoliciesStore.form.name"
         label="Policy Name"
         variant="filled"
-        :rules="[rules.required]"
+        :rules="[rules.required,rules.maxLength]"
         required
         prepend-inner-icon="mdi-shield-plus-outline"
       />
@@ -89,7 +90,8 @@ const snackbar = ref({ show: false, text: '', color: 'success' })
 
 const rules = {
   required: v => !!v || 'Field required',
-  minOne: v => (v && v.length > 0) || 'Select at least one role'
+  minOne: v => (v && v.length > 0) || 'Select at least one role',
+  maxLength: v => (!v || v.length <= 32) || 'Maximum 32 characters'
 }
 
 const route = useRoute()

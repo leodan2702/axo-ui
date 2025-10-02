@@ -46,7 +46,7 @@
         <v-card>
           <v-card-title class="text-h6">Confirm Deletion</v-card-title>
           <v-card-text>
-            Are you sure you want to delete the service "{{ dialog.service?.service_id }}"?
+            Are you sure you want to delete the service "{{ dialog.service?.name }}"?
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>

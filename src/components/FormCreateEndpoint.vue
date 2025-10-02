@@ -14,10 +14,11 @@
     >
       <!-- Nombre del endpoint -->
       <v-text-field
+        counter="32"
         v-model="endpointsStore.form.name"
         label="Endpoint Name"
         variant="filled"
-        :rules="[rules.required]"
+        :rules="[rules.required,rules.maxLength]"     
         required
         prepend-inner-icon="mdi-server-plus"
       />
@@ -129,7 +130,8 @@ const snackbar = ref({
 })
 
 const rules = {
-  required: v => !!v || 'Field required'
+  required: v => !!v || 'Field required',
+  maxLength: v => (!v || v.length <= 32) || 'Maximum 32 characters'
 }
 
 const route = useRoute()

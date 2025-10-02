@@ -12,10 +12,12 @@
     >
       <!-- Alias -->
       <v-text-field
+        counter="32"
         v-model="activeObjectsStore.form.axo_alias"
         label="Alias"
         variant="filled"
         prepend-inner-icon="mdi-tag"
+        :rules="[rules.maxLength]"
       />
 
       <!-- Endpoint asociado -->
@@ -150,7 +152,8 @@ const snackbar = ref({ show: false, text: '', color: 'success' })
 const rules = {
   required: v => !!v || 'Field required',
   numeric: v => !isNaN(v) || 'Must be a number',
-  codeRequired: v => (v && v.trim().length > 0) || 'Code is required'
+  codeRequired: v => (v && v.trim().length > 0) || 'Code is required',
+  maxLength: v => (!v || v.length <= 32) || 'Maximum 32 characters'
 }
 
 const route = useRoute()

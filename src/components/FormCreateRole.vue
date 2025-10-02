@@ -14,10 +14,11 @@
     >
       <!-- Nombre del rol -->
       <v-text-field
+        counter="32"
         v-model="rolesStore.form.name"
         label="Role Name"
         variant="filled"
-        :rules="[rules.required]"
+        :rules="[rules.required,rules.maxLength]"
         required
         prepend-inner-icon="mdi-account-edit"
       />
@@ -58,7 +59,7 @@
           type="submit"
           variant="elevated"
           block
-          :disabled="!canSubmit"
+          :disabled="!isValidForm"
         >
           {{ isEditing ? 'Update' : 'Save' }}
         </v-btn>
@@ -103,7 +104,8 @@ const snackbar = ref({
 
 const rules = {
   required: v => !!v || 'Field required',
-  minOne: v => (!permissionsTouched.value || (v && v.length > 0)) || 'Select at least one permission'
+  minOne: v => (!permissionsTouched.value || (v && v.length > 0)) || 'Select at least one permission',
+  maxLength: v => (!v || v.length <= 32) || 'Maximum 32 characters'
 }
 
 const route = useRoute()

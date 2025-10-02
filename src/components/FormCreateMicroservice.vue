@@ -15,10 +15,11 @@
     >
       <!-- Nombre del microservice -->
       <v-text-field
+        counter="32"
         v-model="microservicesStore.form.name"
         label="Microservice Name"
         variant="filled"
-        :rules="[rules.required]"
+        :rules="[rules.required,rules.maxLength]"
         required
         prepend-inner-icon="mdi-rename-box"
       />
@@ -118,7 +119,8 @@ const snackbar = ref({
 })
 
 const rules = {
-  required: v => !!v || 'Field required'
+  required: v => !!v || 'Field required',
+  maxLength: v => (!v || v.length <= 32) || 'Maximum 32 characters'
 }
 
 const route = useRoute()

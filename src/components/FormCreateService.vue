@@ -12,10 +12,11 @@
     >
       <!-- Name -->
       <v-text-field
+        counter="32"
         v-model="servicesStore.form.name"
         label="Service Name"
         variant="filled"
-        :rules="[rules.required]"
+        :rules="[rules.required,rules.maxLength]"
         required
         prepend-inner-icon="mdi-briefcase"
       />
@@ -111,7 +112,9 @@ const formRef = ref(null)
 const isEditing = ref(false)
 const snackbar = ref({ show: false, text: '', color: 'success' })
 
-const rules = { required: v => !!v || 'Field required' }
+const rules = { required: v => !!v || 'Field required',
+                maxLength: v => (!v || v.length <= 32) || 'Maximum 32 characters'
+ }
 const route = useRoute()
 
 // --- Computed: microservices asociados ---
