@@ -39,24 +39,26 @@
       <!-- Recursos -->
       <v-row>
         <v-col cols="6">
-          <v-text-field
+          <v-number-input
             v-model="microservicesStore.form.resources.cpu"
             label="CPU"
-            type="number"
             variant="filled"
             :rules="[rules.required]"
             required
             prepend-inner-icon="mdi-chip"
+            min="1"
           />
         </v-col>
+
         <v-col cols="6">
-          <v-text-field
-            v-model="microservicesStore.form.resources.ram"
-            label="RAM (e.g. 1GB)"
+          <v-number-input
+            v-model="ramNumber"
+            label="RAM"
             variant="filled"
             :rules="[rules.required]"
             required
             prepend-inner-icon="mdi-memory"
+            min="1"
           />
         </v-col>
       </v-row>
@@ -64,7 +66,7 @@
       <!-- Botón Guardar -->
       <div class="d-flex mt-4">
         <v-btn
-        data-step="save-microservice-button"
+          data-step="save-microservice-button"
           :loading="microservicesStore.loading"
           color="#11222eff"
           size="large"
@@ -98,7 +100,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useRoute, onBeforeRouteUpdate } from 'vue-router'
 import { useMicroservicesStore } from '@/store/microservices'
 import { useServicesStore } from '@/store/services'
@@ -123,6 +125,20 @@ const rules = {
 
 const route = useRoute()
 
+// --- RAM Number + Computed para enviar string "4GB" ---
+const ramNumber = ref(
+  microservicesStore.form.resources?.ram
+    ? parseInt(microservicesStore.form.resources.ram.replace("GB", ""))
+    : 1
+)
+
+const ramString = computed({
+  get: () => `${ramNumber.value}GB`,
+  set: val => {
+    ramNumber.value = parseInt(val.replace("GB", "")) || 1
+  }
+})
+
 // --- Cargar formulario ---
 const loadForm = (editQuery) => {
   if (editQuery) {
@@ -130,19 +146,34 @@ const loadForm = (editQuery) => {
     const msToEdit = microservicesStore.microservices.find(m => m.microservice_id === editQuery)
     if (msToEdit) {
       microservicesStore.form = { ...msToEdit }
+
+      // Asegurar que CPU y RAM tengan valores válidos
+      if (!msToEdit.resources?.cpu || msToEdit.resources.cpu < 1) {
+        microservicesStore.form.resources.cpu = 1
+      }
+      if (msToEdit.resources?.ram) {
+        ramNumber.value = parseInt(msToEdit.resources.ram.replace("GB", "")) || 1
+      }
     }
   } else {
     isEditing.value = false
     microservicesStore.resetForm()
     formRef.value.resetValidation()
     isValid.value = false
+
+    // Valores por defecto
+    microservicesStore.form.resources.cpu = 1
+    ramNumber.value = 1
   }
 }
 
 // --- Al montar ---
 onMounted(async () => {
   await servicesStore.get_services()
-  availableServices.value = servicesStore.services.map(s => ({ service_id: s.service_id, name: s.name }))
+  availableServices.value = servicesStore.services.map(s => ({
+    service_id: s.service_id,
+    name: s.name ?? s.service_id
+  }))
   loadForm(route.query.edit)
 })
 
@@ -156,10 +187,14 @@ onBeforeUnmount(() => {
   microservicesStore.resetForm()
   formRef.value.resetValidation()
   isValid.value = false
+  ramNumber.value = 1
 })
 
 // --- Guardar ---
 const save = async () => {
+  // Convertir RAM a string "4GB" antes de enviar
+  microservicesStore.form.resources.ram = ramString.value
+
   let result
   if (isEditing.value) {
     result = await microservicesStore.update_microservice(route.query.edit)
@@ -178,8 +213,9 @@ const save = async () => {
 
     if (!isEditing.value) {
       microservicesStore.resetForm()
-      isValid.value = false
       formRef.value.resetValidation()
+      ramNumber.value = 1
+      isValid.value = false
     }
   } else {
     snackbar.value = { show: true, text: 'Error: ' + result.message, color: 'error' }

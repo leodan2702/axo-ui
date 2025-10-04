@@ -36,24 +36,25 @@
       <!-- Recursos -->
       <v-row>
         <v-col cols="6">
-          <v-text-field
+          <v-number-input
             v-model="endpointsStore.form.resources.cpu"
             label="CPU"
-            type="number"
             variant="filled"
             :rules="[rules.required]"
             required
             prepend-inner-icon="mdi-chip"
+            min="1"
           />
         </v-col>
         <v-col cols="6">
-          <v-text-field
-            v-model="endpointsStore.form.resources.ram"
-            label="RAM (e.g. 1GB)"
+          <v-number-input
+            v-model="ramNumber"
+            label="RAM"
             variant="filled"
             :rules="[rules.required]"
             required
             prepend-inner-icon="mdi-memory"
+            min="1"
           />
         </v-col>
       </v-row>
@@ -108,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useRoute, onBeforeRouteUpdate } from 'vue-router'
 import { useEndpointsStore } from '@/store/endpoints'
 import { useSecurityPoliciesStore } from '@/store/security_policy'
@@ -134,20 +135,42 @@ const rules = {
 
 const route = useRoute()
 
+// --- RAM Number + Computed para enviar string "4GB" ---
+const ramNumber = ref(
+  endpointsStore.form.resources?.ram
+    ? parseInt(endpointsStore.form.resources.ram.replace("GB", ""))
+    : 1
+)
+const ramString = computed({
+  get: () => `${ramNumber.value}GB`,
+  set: val => {
+    ramNumber.value = parseInt(val.replace("GB", "")) || 1
+  }
+})
+
 // --- Cargar formulario ---
 const loadForm = (editQuery) => {
   if (editQuery) {
     isEditing.value = true
-    const endpointToEdit = endpointsStore.endpoints.find(e => e.endpoint_id === editQuery)
-    if (endpointToEdit) {
-      endpointsStore.form = { ...endpointToEdit }
-      endpointsStore.form.security_policy = endpointToEdit.security_policy || ''
+    const epToEdit = endpointsStore.endpoints.find(e => e.endpoint_id === editQuery)
+    if (epToEdit) {
+      endpointsStore.form = { ...epToEdit }
+      // Inicializar CPU y RAM si faltan
+      if (!epToEdit.resources?.cpu || epToEdit.resources.cpu < 1) {
+        endpointsStore.form.resources.cpu = 1
+      }
+      if (epToEdit.resources?.ram) {
+        ramNumber.value = parseInt(epToEdit.resources.ram.replace("GB", "")) || 1
+      }
+      endpointsStore.form.security_policy = epToEdit.security_policy || ''
     }
   } else {
     isEditing.value = false
     endpointsStore.resetForm()
     formRef.value?.resetValidation()
     isValid.value = false
+    endpointsStore.form.resources.cpu = 1
+    ramNumber.value = 1
   }
 }
 
@@ -175,11 +198,15 @@ onBeforeUnmount(() => {
   endpointsStore.resetForm()
   formRef.value?.resetValidation()
   isValid.value = false
+  ramNumber.value = 1
 })
 
 // --- Guardar ---
 const save = async () => {
-  let result;
+  // Convertir RAM a string antes de enviar
+  endpointsStore.form.resources.ram = ramString.value
+
+  let result
   if (isEditing.value) {
     // Actualizar endpoint existente
     result = await endpointsStore.update_endpoint(route.query.edit);
@@ -192,15 +219,16 @@ const save = async () => {
     show: true,
     text: result.color === "success"
       ? `Endpoint deployed successfully: ${result.data.name}`
-      : `Error during deploy. Endpoint created: ${result.data?.name ?? ''}. ${result.message}`,
-    color: result.color === "success" ? "success" : "error"
-  };
+      : `Error: ${result.message ?? ''}`,
+    color: result.color === 'success' ? 'success' : 'error'
+  }
 
   if (result.color === "success" || result.data) {
     formRef.value.resetValidation();
     if (!isEditing.value) {
       isValid.value = false
       endpointsStore.resetForm()
+      ramNumber.value = 1
     }
   } else {
     snackbar.value = { show: true, text: 'Error: ' + result.message, color: 'error' }
