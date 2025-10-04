@@ -10,34 +10,43 @@ const CRYPTOMESH_URL = `http://localhost:19000`
 const CRYPTOMESH_API_VERSION = `v1`
 
 function mapHierarchyToTree(data) {
-    return data.map(service => ({
-        id: service.service_id,
-        label: service.service_name,
-        type: "service",
-        icon: icon_ser,
-        children: service.microservices.map(ms => ({
-            id: ms.microservice_id,
-            label: ms.microservice_name,
-            type: "microservice",
-            icon: micro,
-            children: ms.active_objects.map(ao => ({
-                id: ao.active_object_id,
-                label: ao.alias || ao.object_name || "Unnamed OA",
-                type: "active_object",
-                icon: OA,
-                children: ao.functions.map(fn => ({
-                    id: fn.function_id,
-                    label: fn.name,
-                    type: "function",
-                    draggable: true,
-                    icon: ao_function,
-                    functionData: fn,
-                    parentAO: ao
-                }))
-            }))
+  return data.map(service => ({
+    id: service.service_id,
+    label: service.service_name,
+    type: "service",
+    icon: icon_ser,
+    children: service.microservices.map(ms => ({
+      id: ms.microservice_id,
+      label: ms.microservice_name,
+      type: "microservice",
+      icon: micro,
+      children: ms.active_objects.map(ao => ({
+        id: ao.active_object_id,
+        label: ao.alias || ao.object_name || "Unnamed OA",
+        type: "active_object",
+        icon: OA,
+        axo_bucket_id: ao.axo_bucket_id,
+        axo_endpoint_id: ao.axo_endpoint_id,
+
+        children: ao.functions.map(fn => ({
+          id: fn.function_id,
+          label: fn.name,
+          type: "function",
+          draggable: true,
+          icon: ao_function,
+          functionData: fn,
+
+          // ✅ heredar solo estos
+          axo_bucket_id: ao.axo_bucket_id,
+          axo_endpoint_id: ao.axo_endpoint_id,
+
+          parentAO: ao
         }))
+      }))
     }))
+  }))
 }
+
 
 export const useHierarchyStore = defineStore("hierarchy", () => {
     const rawData = ref([])

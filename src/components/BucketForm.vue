@@ -10,7 +10,7 @@
           Bucket Configuration
         </h2>
         <span class="text-caption text-grey">
-          {{ bucket.label || "Storage Bucket" }}
+          {{ bucket.id || "Storage Bucket" }}
         </span>
       </div>
     </v-card-title>

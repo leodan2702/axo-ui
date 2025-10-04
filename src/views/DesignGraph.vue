@@ -26,7 +26,7 @@
             <img :src="del" alt="delete" class="btn-icon" /> Remove Selection
           </button>
 
-          <button class="btn primary" @click="exportAndSend" data-step="run-coreography-button">
+          <button class="btn primary" @click="exportGraphAndSend" data-step="run-coreography-button">
             <img :src="iconrun" alt="iconrun" class="btn-icon" />
             Run Choreography
           </button>
@@ -161,7 +161,7 @@ const edges = ref([])
 
 /* Crear bucket */
 const createBucket = () => {
-  const newId = "bucket-" + Date.now()
+  const newId = "bucket" + Date.now()
   nodes.value.push({
     id: newId,
     type: "custom",
@@ -205,8 +205,14 @@ const deleteSelected = () => {
 
 /* Teclas */
 const onKeyDown = (e) => {
-  if (e.key === "Delete" || e.key === "Backspace") deleteSelected()
+  const tag = e.target.tagName.toLowerCase()
+  if (tag === "input" || tag === "textarea") return // 👈 evita conflicto
+
+  if (e.key === "Delete" || e.key === "Backspace") {
+    deleteSelected()
+  }
 }
+
 
 /* Drag & Drop */
 const onDragOver = (event) => {
@@ -221,6 +227,7 @@ const onDrop = async (event) => {
   if (!raw) return
 
   const data = JSON.parse(raw)
+  console.log("[onDrop] raw data:", data)
 
   const position = project({
     x: event.clientX - bounds.left,
@@ -228,20 +235,136 @@ const onDrop = async (event) => {
   })
 
   const newNode = {
-    id: `${data.active_object_id}-${data.method}-${uuidv4()}`,
+    id: `${data.functionData.function_id}-${uuidv4()}`,
     type: "custom",
     position,
-    data: { label: data.alias || data.class_name, method: data.method, icon: OA},
+    data: {
+      label: data.alias,
+      method: data.functionData.name,
+      icon: OA
+    },
     selectable: true,
     draggable: true,
     connectable: true,
-    originData: data
+    originData: {
+      id: data.functionData.function_id,
+      class_name: data.parentAO?.object_name || "ActiveObject",
+      alias: data.alias,
+      method: data.functionData.name,
+
+      // 👀 logs de los campos críticos
+      axo_bucket_id: data.parentAO?.axo_bucket_id || null,
+      axo_endpoint_id: data.parentAO?.axo_endpoint_id || null,
+
+      parameters: { init: {}, call: {} },
+      functionData: data.functionData
+    }
   }
 
   nodes.value.push(newNode)
 
   selectedOA.value = newNode
   await openConfig(newNode)
+}
+
+
+const buildGraphJSON = () => {
+  const vertices = nodes.value.map(node => {
+    if (node.originData.class_name === "Bucket") {
+      return {
+        id: node.originData.id || node.id,
+        type: "Bucket",
+        sink_bucket_id: node.originData.sink_bucket_id || ""
+      }
+    }
+
+    const method = node.originData.method
+    const baseAlias = node.originData.alias || node.originData.class_name
+    const alias = `${baseAlias}.${method}()`
+    const name = node.originData.alias
+
+    return {
+      id: node.originData.id || node.id,
+      type: "ActiveObject",
+      name: name,
+      rule: {
+        target: {
+          alias,
+          axo_bucket_id: node.originData.axo_bucket_id || "",
+          axo_endpoint_id: node.originData.axo_endpoint_id || ""
+        }
+      },
+      params: {
+        init: { ...(node.originData.parameters?.init || {}) },
+        call: { ...(node.originData.parameters?.call || {}) }
+      }
+    }
+  })
+
+  // procesar edges y ajustar source/sink
+  edges.value.forEach(edge => {
+    const src = nodes.value.find(n => n.id === edge.source)
+    const tgt = nodes.value.find(n => n.id === edge.target)
+
+    // OA -> Bucket (sink)
+    if (src?.originData.class_name !== "Bucket" && tgt?.originData.class_name === "Bucket") {
+      const v = vertices.find(v => v.id === src.originData.id)
+      if (v) {
+        v.params.init = {
+          ...v.params.init,
+          sink_bucket_id: tgt.originData.sink_bucket_id
+        }
+      }
+    }
+
+    // Bucket -> OA (source)
+    if (src?.originData.class_name === "Bucket" && tgt?.originData.class_name !== "Bucket") {
+      const v = vertices.find(v => v.id === tgt.originData.id)
+      if (v) {
+        v.params.init = {
+          ...v.params.init,
+          source_bucket_id: src.originData.sink_bucket_id
+        }
+      }
+    }
+  })
+
+  const graphEdges = edges.value.map(edge => {
+    const src = nodes.value.find(n => n.id === edge.source)
+    const tgt = nodes.value.find(n => n.id === edge.target)
+
+    const from = src.originData.class_name === "Bucket"
+      ? src.originData.sink_bucket_id || src.id
+      : `${src.originData.alias}.${src.originData.method}()`
+
+    const to = tgt.originData.class_name === "Bucket"
+      ? tgt.originData.sink_bucket_id || tgt.id
+      : `${tgt.originData.alias}.${tgt.originData.method}()`
+
+    return { from, to }
+  })
+
+  const graph = { vertices, edges: graphEdges }
+  console.log("Graph JSON:", JSON.stringify(graph, null, 2))
+  return graph
+}
+
+
+const exportGraphAndSend = async () => {
+  running.value = true
+  snackbar.value = { show: true, text: "Exporting graph...", color: "info" }
+
+  const graphJson = buildGraphJSON()
+  const { color, data, message } = await choreographyStore.sendGraph(graphJson)
+
+  running.value = false
+
+  if (color === "success") {
+    snackbar.value = { show: true, text: "Graph sent to ShieldX", color }
+    console.log("Graph result:", data)
+  } else {
+    snackbar.value = { show: true, text: message, color }
+  }
 }
 
 
@@ -377,7 +500,11 @@ const buildChoreographyJSON = () => {
       const trig = {
         name: getTriggerName(node),
         rule: {
-          target: { alias },
+          target: { alias, 
+            ...(node.originData.axo_bucket_id
+              ? { axo_bucket_id: node.originData.axo_bucket_id }
+              : {}),
+          },
           parameters: {
             init: { ...(node.originData.parameters?.init || {}) },
             call: { ...(node.originData.parameters?.call || {}) },
@@ -477,6 +604,10 @@ const handleSaveConfig = (updated) => {
     if (node.originData.class_name === "Bucket") {
       return {
         ...node,
+        data: {
+          ...node.data,
+          label: updated.sink_bucket_id || node.data.label // 👈 mostramos el nombre del bucket
+        },
         originData: {
           ...node.originData,
           sink_bucket_id: updated.sink_bucket_id,

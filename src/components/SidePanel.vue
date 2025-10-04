@@ -110,6 +110,14 @@ const onDragStart = (event, obj) => {
     class_name: obj.parentAO?.object_name,
     icon: obj.icon || null,
     functionData: obj.functionData,
+    parentAO: {
+      active_object_id: obj.parentAO?.active_object_id,
+      alias: obj.parentAO?.alias,
+      class_name: obj.parentAO?.object_name,
+      axo_bucket_id: obj.parentAO?.axo_bucket_id,
+      axo_endpoint_id: obj.parentAO?.axo_endpoint_id,
+      version: obj.parentAO?.version,
+    },
   }
 
   event.dataTransfer.setData("application/vueflow", JSON.stringify(payload))
