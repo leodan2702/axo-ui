@@ -1,8 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-
-const CRYPTOMESH_URL = `http://localhost:19000`;
-const CRYPTOMESH_API_VERSION = `v1`;
+import { fetchWithHandling } from "../utils/apiHelpers";
+import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION } from "@/config";
 
 export const useRolesStore = defineStore('roles', () => {
     const roles = ref([]);
@@ -28,8 +27,10 @@ export const useRolesStore = defineStore('roles', () => {
     // Obtener todos los roles
     async function get_roles() {
         try {
-            const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/roles/`);
-            const data_json = await response.json();
+            const data_json = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/roles/`,
+                {},
+                "Failed to fetch roles"
+            );
             roles.value = data_json;
             return { color: "success" };
         } catch (error) {
@@ -43,13 +44,14 @@ export const useRolesStore = defineStore('roles', () => {
     async function create_role() {
         loading.value = true
         try {
-            const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/roles/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form.value)
-            });
-            if (!response.ok) throw new Error('Failed to create role');
-            const createdRole = await response.json();
+            const createdRole = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/roles/`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(form.value)
+                },
+                "Failed to create role"
+            );
             roles.value.push(createdRole); // agregamos el rol al store
             resetForm()
             return { color: "success", data: createdRole };
@@ -66,13 +68,14 @@ export const useRolesStore = defineStore('roles', () => {
     async function update_role(role_id) {
         loading.value = true
         try {
-            const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/roles/${role_id}/`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form.value)
-            });
-            if (!response.ok) throw new Error('Failed to update role');
-            const updatedRole = await response.json();
+            const updatedRole = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/roles/${role_id}/`,
+                {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(form.value)
+                },
+                "Failed to update role"
+            );
 
             //Actualizar rol existente
             const index = roles.value.findIndex(r => r.role_id === role_id);
@@ -93,10 +96,10 @@ export const useRolesStore = defineStore('roles', () => {
     // Eliminar un rol
     async function delete_role(role_id) {
         try {
-            const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/roles/${role_id}/`, {
-                method: 'DELETE',
-            });
-            if (!response.ok) throw new Error('Failed to delete role');
+            await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/roles/${role_id}/`,
+                { method: 'DELETE' },
+                "Failed to delete role"
+            );
 
             // Eliminarlo del store local
             roles.value = roles.value.filter(r => r.role_id !== role_id);

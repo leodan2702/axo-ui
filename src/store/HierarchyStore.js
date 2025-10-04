@@ -2,9 +2,7 @@
 import { defineStore } from "pinia"
 import { ref } from "vue"
 import OA from "@/assets/axo_OA_assets.png"
-
-const CRYPTOMESH_URL = `http://localhost:19000`
-const CRYPTOMESH_API_VERSION = `v1`
+import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION } from "@/config"
 
 function mapHierarchyToTree(data) {
     return data.map(service => ({

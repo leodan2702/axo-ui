@@ -1,8 +1,9 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import { fetchWithHandling } from "../utils/apiHelpers"; 
+import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION } from "@/config";
 
-const CRYPTOMESH_URL = `http://localhost:19000`;
-const CRYPTOMESH_API_VERSION = `v1`;
+
 
 export const useServicesStore = defineStore('services', () => {
   const services = ref([]);
@@ -12,7 +13,7 @@ export const useServicesStore = defineStore('services', () => {
     name: '',
     security_policy: '',
     microservices: [],
-    resources: { cpu: 0, ram: '' }
+    resources: { cpu: 1, ram: '1GB' }
   });
 
   const loading = ref(false);
@@ -22,19 +23,21 @@ export const useServicesStore = defineStore('services', () => {
       name: '',
       security_policy: '',
       microservices: [],
-      resources: { cpu: 0, ram: '' }
+      resources: { cpu: 1, ram: '1GB' }
     };
   }
 
   // Obtener todos los servicios
   async function get_services() {
     try {
-      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/services/`);
-      const data_json = await response.json();
+      const data_json = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/services/`,
+        {},
+        "Failed to fetch services"
+      );
       services.value = data_json;
       return { color: "success" };
     } catch (error) {
-      console.error('Error', error);
+      console.error("Error", error);
       const message = error?.message ?? "Unknown error, please contact support@axo.mx";
       return { color: "error", message };
     }
@@ -44,18 +47,20 @@ export const useServicesStore = defineStore('services', () => {
   async function create_service() {
     loading.value = true;
     try {
-      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/services/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form.value)
-      });
-      if (!response.ok) throw new Error('Failed to create service');
-      const createdService = await response.json();
+      const createdService = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/services/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form.value)
+        },
+        "Failed to create service"
+      );
+
       services.value.push(createdService);
       resetForm();
       return { color: "success", data: createdService };
     } catch (error) {
-      console.error('Error', error);
+      console.error("Error", error);
       const message = error?.message ?? "Unknown error, please contact support@axo.mx";
       return { color: "error", message };
     } finally {
@@ -67,13 +72,14 @@ export const useServicesStore = defineStore('services', () => {
   async function update_service(service_id) {
     loading.value = true;
     try {
-      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/services/${service_id}/`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form.value)
-      });
-      if (!response.ok) throw new Error('Failed to update service');
-      const updatedService = await response.json();
+      const updatedService = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/services/${service_id}/`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form.value)
+        },
+        "Failed to update service"
+      );
 
       // Actualizar en el store local
       const index = services.value.findIndex(s => s.service_id === service_id);
@@ -83,7 +89,7 @@ export const useServicesStore = defineStore('services', () => {
 
       return { color: "success", data: updatedService };
     } catch (error) {
-      console.error('Error', error);
+      console.error("Error", error);
       const message = error?.message ?? "Unknown error, please contact support@axo.mx";
       return { color: "error", message };
     } finally {
@@ -94,17 +100,17 @@ export const useServicesStore = defineStore('services', () => {
   // Eliminar un servicio
   async function delete_service(service_id) {
     try {
-      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/services/${service_id}/`, {
-        method: 'DELETE'
-      });
-      if (!response.ok) throw new Error('Failed to delete service');
+      await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/services/${service_id}/`,
+        { method: 'DELETE' },
+        "Failed to delete service"
+      );
 
       // Eliminarlo del store local
       services.value = services.value.filter(s => s.service_id !== service_id);
 
       return { color: "success" };
     } catch (error) {
-      console.error('Error', error);
+      console.error("Error", error);
       const message = error?.message ?? "Unknown error, please contact support@axo.mx";
       return { color: "error", message };
     }

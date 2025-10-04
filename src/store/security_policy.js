@@ -1,8 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-
-const CRYPTOMESH_URL = `http://localhost:19000`;
-const CRYPTOMESH_API_VERSION = `v1`;
+import { fetchWithHandling } from "../utils/apiHelpers";
+import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION } from "@/config";
 
 export const useSecurityPoliciesStore = defineStore('security_policies', () => {
     const policies = ref([]);
@@ -28,9 +27,10 @@ export const useSecurityPoliciesStore = defineStore('security_policies', () => {
     // Obtener todas las policies
     async function get_policies() {
         try {
-            const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/security-policies/`);
-            if (!response.ok) throw new Error("Failed to fetch security policies");
-            const data_json = await response.json();
+            const data_json = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/security-policies/`,
+                {},
+                "Failed to fetch security policies"
+            );
             policies.value = data_json;
             return { color: "success" };
         } catch (error) {
@@ -44,13 +44,14 @@ export const useSecurityPoliciesStore = defineStore('security_policies', () => {
     async function create_policy() {
         loading.value = true;
         try {
-            const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/security-policies/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form.value)
-            });
-            if (!response.ok) throw new Error('Failed to create policy');
-            const createdPolicy = await response.json();
+            const createdPolicy = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/security-policies/`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(form.value)
+                },
+                "Failed to create policy"
+            );
             policies.value.push(createdPolicy);
             resetForm();
             return { color: "success", data: createdPolicy };
@@ -67,19 +68,18 @@ export const useSecurityPoliciesStore = defineStore('security_policies', () => {
     async function update_policy(sp_id) {
         loading.value = true;
         try {
-            const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/security-policies/${sp_id}/`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form.value)
-            });
-            if (!response.ok) throw new Error('Failed to update policy');
-            const updatedPolicy = await response.json();
+            const updatedPolicy = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/security-policies/${sp_id}/`,
+                {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(form.value)
+                },
+                "Failed to update policy"
+            );
 
             // Actualizar policy en el store
             const index = policies.value.findIndex(p => p.sp_id === sp_id);
-            if (index !== -1) {
-                policies.value[index] = updatedPolicy;
-            }
+            if (index !== -1) policies.value[index] = updatedPolicy;
 
             return { color: "success", data: updatedPolicy };
         } catch (error) {
@@ -94,10 +94,10 @@ export const useSecurityPoliciesStore = defineStore('security_policies', () => {
     // Eliminar policy
     async function delete_policy(sp_id) {
         try {
-            const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/security-policies/${sp_id}/`, {
-                method: 'DELETE',
-            });
-            if (!response.ok) throw new Error('Failed to delete policy');
+            await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/security-policies/${sp_id}/`,
+                { method: 'DELETE' },
+                "Failed to delete policy"
+            );
 
             policies.value = policies.value.filter(p => p.sp_id !== sp_id);
             return { color: "success" };
@@ -111,12 +111,15 @@ export const useSecurityPoliciesStore = defineStore('security_policies', () => {
     // Obtener policy por sp_id
     async function get_policy_by_id(sp_id) {
         try {
-            const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/security-policies/${sp_id}/`);
-            if (!response.ok) throw new Error("Failed to fetch security policy by id");
-            return await response.json();
+            const data = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/security-policies/${sp_id}/`,
+                {},
+                "Failed to fetch security policy by id"
+            );
+            return { color: "success", data };
         } catch (error) {
             console.error("Error fetching policy:", error);
-            return null;
+            const message = error?.message ?? "Unknown error, please contact support@axo.mx";
+            return { color: "error", message };
         }
     }
 

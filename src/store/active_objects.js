@@ -1,8 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-
-const CRYPTOMESH_URL = `http://localhost:19000`;
-const CRYPTOMESH_API_VERSION = `v1`;
+import { fetchWithHandling } from "../utils/apiHelpers";
+import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION } from "@/config";
 
 export const useActiveObjectsStore = defineStore('activeObjects', () => {
   const activeObjects = ref([]);
@@ -47,8 +46,10 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
   // Obtener todos los ActiveObjects
   async function getActiveObjects() {
     try {
-      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/active-objects/`);
-      const data_json = await response.json();
+      const data_json = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/active-objects/`,
+        {},
+        "Failed to fetch ActiveObjects"
+      );
       activeObjects.value = data_json;
       return { color: "success" };
     } catch (error) {
@@ -64,13 +65,15 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
   async function createActiveObject() {
     loading.value = true;
     try {
-      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/active-objects/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form.value)
-      });
-      if (!response.ok) throw new Error('Failed to create active object');
-      const createdAO = await response.json();
+      const createdAO = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/active-objects/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form.value)
+        },
+        "Failed to create ActiveObject"
+      );
+
       activeObjects.value.push(createdAO);
       resetForm();
       return { color: "success", data: createdAO };
@@ -87,13 +90,14 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
   async function updateActiveObject(active_object_id) {
     loading.value = true;
     try {
-      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/active-objects/${active_object_id}/`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form.value)
-      });
-      if (!response.ok) throw new Error('Failed to update active object');
-      const updatedAO = await response.json();
+      const updatedAO = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/active-objects/${active_object_id}/`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form.value)
+        },
+        "Failed to update ActiveObject"
+      );
 
       const index = activeObjects.value.findIndex(e => e.active_object_id === active_object_id);
       if (index !== -1) activeObjects.value[index] = updatedAO;
@@ -111,10 +115,10 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
   // Eliminar un ActiveObject
   async function deleteActiveObject(active_object_id) {
     try {
-      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/active-objects/${active_object_id}/`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Failed to delete active object');
+      await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/active-objects/${active_object_id}/`,
+        { method: 'DELETE' },
+        "Failed to delete ActiveObject"
+      );
 
       activeObjects.value = activeObjects.value.filter(e => e.active_object_id !== active_object_id);
       return { color: "success" };
@@ -127,16 +131,15 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
 
   async function getActiveObjectSchema(active_object_id) {
     try {
-      const response = await fetch(
-        `${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/active-objects/${active_object_id}/schema`
-      )
-      if (!response.ok) throw new Error("Failed to fetch schema")
-      const schema = await response.json()
-      return { color: "success", data: schema }
+      const schema = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/active-objects/${active_object_id}/schema`,
+        {},
+        "Failed to fetch ActiveObject schema"
+      );
+      return { color: "success", data: schema };
     } catch (error) {
-      console.error("Error", error)
-      const message = error?.message ?? "Unknown error, please contact support@axo.mx"
-      return { color: "error", message }
+      console.error("Error", error);
+      const message = error?.message ?? "Unknown error, please contact support@axo.mx";
+      return { color: "error", message };
     }
   }
 

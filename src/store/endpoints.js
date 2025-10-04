@@ -1,9 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { load } from "webfontloader";
-
-const CRYPTOMESH_URL = `http://localhost:19000`;
-const CRYPTOMESH_API_VERSION = `v1`;
+import { fetchWithHandling } from "../utils/apiHelpers";
+import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION } from "@/config";
 
 export const useEndpointsStore = defineStore('endpoints', () => {
   const endpoints = ref([]);
@@ -12,7 +10,7 @@ export const useEndpointsStore = defineStore('endpoints', () => {
   const form = ref({
     name: '',
     image: '',
-    resources: { cpu: '', ram: '' },
+    resources: { cpu: 1, ram: '' },
     security_policy: ''
   });
 
@@ -22,7 +20,7 @@ export const useEndpointsStore = defineStore('endpoints', () => {
     form.value = {
       name: '',
       image: '',
-      resources: { cpu: '', ram: '' },
+      resources: { cpu: 1, ram: '' },
       security_policy: ''
     };
   }
@@ -30,8 +28,10 @@ export const useEndpointsStore = defineStore('endpoints', () => {
   // Obtener todos los endpoints
   async function get_endpoints() {
     try {
-      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/`);
-      const data_json = await response.json();
+      const data_json = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/`,
+        {},
+        "Failed to fetch endpoints"
+      );
       endpoints.value = data_json;
       return { color: "success" };
     } catch (error) {
@@ -45,13 +45,15 @@ export const useEndpointsStore = defineStore('endpoints', () => {
   async function create_endpoint() {
     loading.value = true;
     try {
-      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form.value)
-      });
-      if (!response.ok) throw new Error('Failed to create endpoint');
-      const createdEndpoint = await response.json();
+      const createdEndpoint = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form.value)
+        },
+        "Failed to create endpoint"
+      );
+
       endpoints.value.push(createdEndpoint); // agregamos al store
       resetForm();
       return { color: "success", data: createdEndpoint };
@@ -68,19 +70,18 @@ export const useEndpointsStore = defineStore('endpoints', () => {
   async function update_endpoint(endpoint_id) {
     loading.value = true;
     try {
-      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/${endpoint_id}/`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form.value)
-      });
-      if (!response.ok) throw new Error('Failed to update endpoint');
-      const updatedEndpoint = await response.json();
+      const updatedEndpoint = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/${endpoint_id}/`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form.value)
+        },
+        "Failed to update endpoint"
+      );
 
       // Actualizar en el store local
       const index = endpoints.value.findIndex(e => e.endpoint_id === endpoint_id);
-      if (index !== -1) {
-        endpoints.value[index] = updatedEndpoint;
-      }
+      if (index !== -1) endpoints.value[index] = updatedEndpoint;
 
       return { color: "success", data: updatedEndpoint };
     } catch (error) {
@@ -95,10 +96,10 @@ export const useEndpointsStore = defineStore('endpoints', () => {
   // Eliminar un endpoint
   async function delete_endpoint(endpoint_id) {
     try {
-      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/${endpoint_id}/`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Failed to delete endpoint');
+      await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/${endpoint_id}/`,
+        { method: 'DELETE' },
+        "Failed to delete endpoint"
+      );
 
       // Eliminarlo del store local
       endpoints.value = endpoints.value.filter(e => e.endpoint_id !== endpoint_id);
@@ -115,14 +116,14 @@ export const useEndpointsStore = defineStore('endpoints', () => {
   async function deploy_endpoint() {
     loading.value = true;
     try {
-      const deployResp = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/deploy`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form.value)
-      });
-
-      if (!deployResp.ok) throw new Error('Failed to deploy endpoint');
-      const deployed = await deployResp.json();
+      const deployed = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/deploy`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form.value)
+        },
+        "Failed to deploy endpoint"
+      );
 
       endpoints.value.push(deployed);
 
@@ -131,7 +132,8 @@ export const useEndpointsStore = defineStore('endpoints', () => {
 
     } catch (error) {
       console.error('Error', error);
-      return { color: "error", message: error?.message ?? "Unknown error" };
+      const message = error?.message ?? "Unknown error, please contact support@axo.mx";
+      return { color: "error", message };
     } finally {
       loading.value = false;
     }
@@ -142,11 +144,12 @@ export const useEndpointsStore = defineStore('endpoints', () => {
   // detener o desconectar un endpoint
   async function detach_endpoint(endpoint_id){
     loading.value = true;
-    try{
-      const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/detach/${endpoint_id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Failed to detach endpoint');
+    try {
+      await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/detach/${endpoint_id}`,
+        { method: 'DELETE' },
+        "Failed to detach endpoint"
+      );
+
       endpoints.value = endpoints.value.filter(e => e.endpoint_id !== endpoint_id);
 
       return { color: "success" };
