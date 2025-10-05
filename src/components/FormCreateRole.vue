@@ -20,7 +20,7 @@
         variant="filled"
         :rules="[rules.required,rules.maxLength]"
         required
-        prepend-inner-icon="mdi-account-edit"
+        prepend-inner-icon="mdi-tag"
       />
 
       <!-- Descripción -->
@@ -31,7 +31,7 @@
         rows="2"
         :rules="[rules.required]"
         required
-        prepend-inner-icon="mdi-text"
+        prepend-inner-icon="mdi-file-document-edit"
       />
 
       <!-- Permisos -->
@@ -44,7 +44,7 @@
         clearable
         variant="filled"
         :rules="[rules.minOne]"
-        prepend-inner-icon="mdi-lock"
+        prepend-inner-icon="mdi-lock-open-variant"
         required
         @focus="permissionsTouched = true"
         @change="permissionsTouched = true"

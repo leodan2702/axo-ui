@@ -18,7 +18,7 @@
         variant="filled"
         :rules="[rules.required,rules.maxLength]"
         required
-        prepend-inner-icon="mdi-briefcase"
+        prepend-inner-icon="mdi-tag"
       />
 
       <!-- Security Policy (sp_id) -->

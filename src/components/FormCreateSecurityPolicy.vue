@@ -13,7 +13,7 @@
         variant="filled"
         :rules="[rules.required,rules.maxLength]"
         required
-        prepend-inner-icon="mdi-shield-plus-outline"
+        prepend-inner-icon="mdi-tag"
       />
 
       <!-- Roles -->

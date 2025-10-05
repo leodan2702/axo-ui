@@ -21,7 +21,7 @@
         variant="filled"
         :rules="[rules.required,rules.maxLength]"
         required
-        prepend-inner-icon="mdi-rename-box"
+        prepend-inner-icon="mdi-tag"
       />
 
       <!-- Selección de servicio -->

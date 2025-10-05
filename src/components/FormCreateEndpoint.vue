@@ -20,7 +20,7 @@
         variant="filled"
         :rules="[rules.required,rules.maxLength]"     
         required
-        prepend-inner-icon="mdi-server-plus"
+        prepend-inner-icon="mdi-tag"
       />
 
       <!-- Imagen -->
@@ -31,7 +31,7 @@
         variant="filled"
         :rules="[rules.required]"
         required
-        prepend-inner-icon="mdi-image"
+        prepend-inner-icon="mdi-docker"
       />
 
       <!-- Recursos -->
