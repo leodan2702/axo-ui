@@ -3,8 +3,19 @@
     <v-main class="d-flex-column justify-center align-center pa-5" style="min-height: 300px;">
       <v-container>
         <div class="d-flex flex-column">
-          <div class="d-flex">
-            <h1>Edit Profile</h1>
+          <div class="d-flex align-center mb-6">
+          <v-btn
+            color="·040404"
+            variant="outlined"
+            @click="goBack('/home')"
+            class="mr-4"
+          >
+          <v-icon start>mdi-arrow-left-circle</v-icon>
+            Back
+          </v-btn>
+
+          <h1 class="page-title">Edit Profile</h1>
+          <v-spacer></v-spacer>
           </div>
           <v-divider></v-divider>
 
@@ -34,42 +45,38 @@
               <div class="w-50">
                 <v-row>
                   <v-col cols="12" sm="6">
-                    <p>First Name</p>
                     <v-text-field 
                     placeholder="First Name" 
-                    variant="outlined" 
+                    variant="filled" 
                     density="compact"
                     :model-value= "userStore.user.first_name" 
                     ></v-text-field>
                   </v-col>
 
                   <v-col cols="12" sm="6">
-                    <p>Last Name</p>
                     <v-text-field 
                     placeholder="Last Name" 
-                    variant="outlined" 
+                    variant="filled" 
                     density="compact"
                     :model-value= "userStore.user.last_name"
                     ></v-text-field>
                   </v-col>
 
                   <v-col cols="12" sm="12">
-                    <p>About</p>
                     <v-textarea
                       placeholder="About"
                       row-height="25"
                       rows="3"
-                      variant="outlined"
+                      variant="filled"
                       auto-grow
                       shaped
                     ></v-textarea>
                   </v-col>
 
                   <v-col cols="12" sm="6">
-                    <p>Username</p>
                     <v-text-field 
                     placeholder="Username" 
-                    variant="outlined" 
+                    variant="filled" 
                     density="compact"
                     :model-value= "userStore.user.username"
                     ></v-text-field>
@@ -77,7 +84,7 @@
                 </v-row>
                 <div class="d-flex align-end justify-end w-100 mt-5">
                   <v-btn color="grey-lighten-2" class=" mr-3">Discard</v-btn>
-                  <v-btn color="#06151cff" class="px-8">save</v-btn>
+                  <v-btn color="#040404" class="px-8">save</v-btn>
                 </div>
               </div>
             </v-form>
@@ -90,13 +97,18 @@
 
 <script setup>
 import { useUserStore } from "@/store/user";
+import { useRouter } from "vue-router"
 
+const router = useRouter()
+const goBack = (path) => {
+  router.push({ path })
+}
 const userStore = useUserStore(); 
 </script>
 
 <style scoped>
 .btn-add {
-  background-color: #11212D;
+  background-color: #040404;
   color: white;
   padding: 5px 20px;
   border: none;

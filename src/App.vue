@@ -42,7 +42,7 @@
   <v-app>
     <!-- App Bar -->
     <template v-if="!isAuthRoute">
-      <v-app-bar app fixed color="#06141b" class="text-white" style="z-index: 1;">
+      <v-app-bar app fixed color="#040404" class="text-white" style="z-index: 1;">
         <div class="d-flex justify-start">
           <v-img
             data-step="app-logo"
@@ -57,7 +57,7 @@
         </template>
         <v-spacer />
         <div class="d-flex">
-          <popoverMenu data-step="user-profile-menu" />
+          <popoverMenu  data-step="user-profile-menu" />
         </div>
       </v-app-bar>
 
@@ -68,18 +68,18 @@
         app
         :expand-on-hover="!$vuetify.display.smAndDown"
         :rail="!$vuetify.display.smAndDown"
-        color="#11212d"
+        color="#1b1e20"
         :location="$vuetify.display.mobile ? 'left' : undefined"
       >
         <v-divider />
         <v-list density="compact" nav class="text-white">
           <v-list-item data-step="home-menu-item" link prepend-icon="mdi-home" title="Home" value="home" @click="navigateTo('/home')" />
-          <v-list-item data-step="objects-menu-item" link prepend-icon="mdi-folder" title="Objects" value="myObjects" @click="navigateTo('/my-objects')" />
-          <v-list-item data-step="endpoints-menu-item" link prepend-icon="mdi-access-point" title="Endpoints" value="myEndpoints" @click="navigateTo('/endpoints')" />
-          <v-list-item data-step="services-menu-item" link prepend-icon="mdi-layers" title="Services" value="myServices" @click="navigateTo('/services')" />
-          <v-list-item data-step="microservices-menu-item" link prepend-icon="mdi-cogs" title="Microservices" value="myMicroservices" @click="navigateTo('/microservices')" />
-          <v-list-item data-step="roles-menu-item" link prepend-icon="mdi-account-cog" title="Roles" value="Roles" @click="navigateTo('/roles')" />
-          <v-list-item data-step="security-policies-menu-item" link prepend-icon="mdi-shield-key" title="SecurityPolicy" value="SecurityPolicy" @click="navigateTo('/security_policy')" />
+          <v-list-item data-step="objects-menu-item" link prepend-icon="mdi-checkbox-multiple-blank-circle" title="Objects" value="myObjects" @click="navigateTo('/my-objects')" />
+          <v-list-item data-step="endpoints-menu-item" link prepend-icon="mdi-server" title="Endpoints" value="myEndpoints" @click="navigateTo('/endpoints')" />
+          <v-list-item data-step="services-menu-item" link prepend-icon="mdi-cube-outline" title="Services" value="myServices" @click="navigateTo('/services')" />
+          <v-list-item data-step="microservices-menu-item" link prepend-icon="mdi-view-grid" title="Microservices" value="myMicroservices" @click="navigateTo('/microservices')" />    
+          <v-list-item data-step="roles-menu-item" link prepend-icon="mdi-account-group" title="Roles" value="Roles" @click="navigateTo('/roles')" />
+          <v-list-item data-step="security-policies-menu-item" link prepend-icon="mdi-shield-key" title="Security Policies" value="SecurityPolicy" @click="navigateTo('/security_policy')" />
           <v-spacer />
           <v-list-item data-step="design-menu-item" prepend-icon="mdi-graph" title="Design" value="design" @click="navigateTo('/design')" />
           <v-spacer />

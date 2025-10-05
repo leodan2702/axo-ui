@@ -15,12 +15,13 @@
     >
       <!-- Nombre del microservice -->
       <v-text-field
+        counter="32"
         v-model="microservicesStore.form.name"
         label="Microservice Name"
         variant="filled"
-        :rules="[rules.required]"
+        :rules="[rules.required,rules.maxLength]"
         required
-        prepend-inner-icon="mdi-server"
+        prepend-inner-icon="mdi-tag"
       />
 
       <!-- Selección de servicio -->
@@ -33,7 +34,7 @@
         variant="filled"
         :rules="[rules.required]"
         required
-        prepend-inner-icon="mdi-cog"
+        prepend-inner-icon="mdi-cube-outline"
       />
 
       <!-- Recursos -->
@@ -68,7 +69,7 @@
         <v-btn
           data-step="save-microservice-button"
           :loading="microservicesStore.loading"
-          color="#11222eff"
+          color="#040404"
           size="large"
           type="submit"
           variant="elevated"
@@ -120,7 +121,8 @@ const snackbar = ref({
 })
 
 const rules = {
-  required: v => !!v || 'Field required'
+  required: v => !!v || 'Field required',
+  maxLength: v => (!v || v.length <= 32) || 'Maximum 32 characters'
 }
 
 const route = useRoute()

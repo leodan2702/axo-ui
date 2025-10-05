@@ -10,7 +10,7 @@
           Bucket Configuration
         </h2>
         <span class="text-caption text-grey">
-          {{ bucket.label || "Storage Bucket" }}
+          {{ bucket.id || "Storage Bucket" }}
         </span>
       </div>
     </v-card-title>
@@ -62,7 +62,7 @@
     <v-card-actions class="d-flex justify-end mt-2">
       <v-btn
         variant="outlined"
-        color="grey"
+        color="red"
         class="rounded-lg"
         @click="$emit('close')"
       >
@@ -71,6 +71,7 @@
       </v-btn>
 
       <v-btn
+        variant="outlined"
         color="primary"
         class="rounded-lg"
         @click="saveConfig"
@@ -93,7 +94,7 @@ const emit = defineEmits(["save", "close"])
 
 const form = reactive({
   sink_bucket_id: "",
-  sink_key: "",
+  // sink_key: "",  
 })
 
 watch(
@@ -101,7 +102,7 @@ watch(
   (bucket) => {
     if (!bucket) return
     form.sink_bucket_id = bucket.sink_bucket_id ?? ""
-    form.sink_key = bucket.sink_key ?? ""
+    // form.sink_key = bucket.sink_key ?? "" 
   },
   { immediate: true }
 )
@@ -109,7 +110,7 @@ watch(
 const saveConfig = () => {
   emit("save", {
     sink_bucket_id: form.sink_bucket_id,
-    sink_key: form.sink_key,
+    // sink_key: form.sink_key,
   })
 }
 </script>

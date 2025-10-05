@@ -1,7 +1,14 @@
 import { defineStore } from "pinia"
 import { ref } from "vue"
 import yaml from "js-yaml"   // 👈 asegúrate de importar yaml aquí también
+<<<<<<< HEAD
 import { SHIELDX_URL, API_VERSION } from "@/config"
+=======
+
+// const SHIELDX_URL = `const SHIELDX_URL =  ihttp://localhost:20000`
+const SHIELDX_URL =  import.meta.env.VITE_SHIELDX_URL || `http://localhost:20000`
+const API_VERSION = import.meta.env.VITE_API_VERSION || `v1`
+>>>>>>> feature/standardize-visual-assetss
 
 export const useChoreographyStore = defineStore("choreography", () => {
   const loading = ref(false)
@@ -52,9 +59,32 @@ export const useChoreographyStore = defineStore("choreography", () => {
     }
   }
 
+  async function sendGraph(graphJson) {
+    loading.value = true
+    try {
+      const response = await fetch(`${SHIELDX_URL}/api/${API_VERSION}/choreography/run`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(graphJson),
+      })
+
+      if (!response.ok) throw new Error("Failed to send graph")
+
+      const result = await response.json()
+      return { color: "success", data: result }
+    } catch (error) {
+      console.error("Error", error)
+      return { color: "error", message: error?.message ?? "Unknown error" }
+    } finally {
+      loading.value = false
+    }
+  }
+
+
   return {
     loading,
     interpretChoreography,
     interpretChoreographyYaml,
+    sendGraph,
   }
 })

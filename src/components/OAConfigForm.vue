@@ -80,12 +80,12 @@
 
     <!-- Botones de acción -->
     <v-card-actions class="d-flex justify-end mt-2">
-      <v-btn variant="outlined" color="grey" class="rounded-lg" @click="$emit('close')">
+      <v-btn variant="outlined" color="red" class="rounded-lg" @click="$emit('close')">
         <v-icon start>mdi-close</v-icon>
         Cancel
       </v-btn>
 
-      <v-btn color="primary" class="rounded-lg" @click="saveConfig">
+      <v-btn  variant="outlined" color="primary" class="rounded-lg" @click="saveConfig">
         <v-icon start>mdi-content-save</v-icon>
         Save
       </v-btn>

@@ -31,7 +31,7 @@
             :image="OA"
           >
             <template #button>
-              <v-btn small class="btn-edit" @click="handleEdit(ao)" data-step="edit-object-button"> <!-- Agregado -->
+              <v-btn small color="#1976D2" class="btn-edit" @click="handleEdit(ao)" data-step="edit-object-button"> <!-- Agregado -->
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
 
@@ -131,7 +131,7 @@ const confirmDelete = async () => {
 
 <style scoped>
 .btn-edit {
-  background-color: #11212d;
+  background-color: #040404;
   color: white;
   padding: 5px 15px;
   border-radius: 5px;
@@ -140,7 +140,7 @@ const confirmDelete = async () => {
 }
 
 .btn-create {
-  background-color: #11212d;
+  background-color: #040404;
   color: white;
   padding: 5px 15px;
   border-radius: 5px;

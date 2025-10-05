@@ -30,7 +30,7 @@
             :image="microser"
           >
             <template #button>
-              <v-btn small class="btn-edit" @click="handleEdit(ms)">
+              <v-btn small color="#1976D2" class="btn-edit" @click="handleEdit(ms)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
 
@@ -129,7 +129,7 @@ const confirmDelete = async () => {
 <style scoped>
 /* Botón Editar */
 .btn-edit {
-  background-color: #11212d;
+  background-color: #040404;
   color: white;
   padding: 5px 15px;
   border-radius: 5px;
@@ -139,7 +139,7 @@ const confirmDelete = async () => {
 
 /* Botón Crear Nuevo Microservice */
 .btn-create-microservice {
-  background-color: #11212d;
+  background-color: #040404;
   color: white;
   padding: 5px 15px;
   border-radius: 5px;

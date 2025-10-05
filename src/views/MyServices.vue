@@ -29,7 +29,7 @@
             :image="serv"
           >
             <template #button>
-              <v-btn small class="btn-edit" @click="handleEdit(service)">
+              <v-btn small color="#1976D2" class="btn-edit" @click="handleEdit(service)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
 
@@ -46,7 +46,7 @@
         <v-card>
           <v-card-title class="text-h6">Confirm Deletion</v-card-title>
           <v-card-text>
-            Are you sure you want to delete the service "{{ dialog.service?.service_id }}"?
+            Are you sure you want to delete the service "{{ dialog.service?.name }}"?
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -128,7 +128,7 @@ const confirmDelete = async () => {
 <style scoped>
 /* Botón Editar */
 .btn-edit {
-  background-color: #11212d;
+  background-color: #040404;
   color: white;
   padding: 5px 15px;
   border-radius: 5px;
@@ -138,7 +138,7 @@ const confirmDelete = async () => {
 
 /* Botón Crear Nuevo Service */
 .btn-create-service {
-  background-color: #11212d;
+  background-color: #040404;
   color: white;
   padding: 5px 15px;
   border-radius: 5px;

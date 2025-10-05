@@ -14,12 +14,13 @@
     >
       <!-- Nombre del endpoint -->
       <v-text-field
+        counter="32"
         v-model="endpointsStore.form.name"
         label="Endpoint Name"
         variant="filled"
-        :rules="[rules.required]"
+        :rules="[rules.required,rules.maxLength]"     
         required
-        prepend-inner-icon="mdi-api"
+        prepend-inner-icon="mdi-tag"
       />
 
       <!-- Imagen -->
@@ -30,7 +31,7 @@
         variant="filled"
         :rules="[rules.required]"
         required
-        prepend-inner-icon="mdi-image"
+        prepend-inner-icon="mdi-docker"
       />
 
       <!-- Recursos -->
@@ -69,7 +70,7 @@
         variant="filled"
         :rules="[rules.required]"
         required
-        prepend-inner-icon="mdi-shield-lock"
+        prepend-inner-icon="mdi-shield-key"
       />
 
       <!-- Botón Guardar -->
@@ -77,7 +78,7 @@
         <v-btn
           data-step="save-endpoint-button"
           :loading="endpointsStore.loading"
-          color="#11222eff"
+          color="#040404"
           size="large"
           type="submit"
           variant="elevated"
@@ -130,7 +131,8 @@ const snackbar = ref({
 })
 
 const rules = {
-  required: v => !!v || 'Field required'
+  required: v => !!v || 'Field required',
+  maxLength: v => (!v || v.length <= 32) || 'Maximum 32 characters'
 }
 
 const route = useRoute()

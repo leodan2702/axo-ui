@@ -5,8 +5,20 @@
   >
     <v-container>
       <div class="d-flex flex-column">
-        <div class="d-flex align-center mb-4">
-          <h1>Security Policy</h1>
+        <div class="d-flex align-center mb-6">
+          <!-- Botón Return -->
+          <v-btn
+            color="#040404"
+            variant="outlined"
+            @click="goBack('/security_policy')"
+            class="mr-4"
+          >
+          <v-icon start>mdi-arrow-left-circle</v-icon>
+            Back
+          </v-btn>
+
+          <h1 class="page-title">Create Security Policy</h1>
+          <v-spacer></v-spacer>
         </div>
         <v-divider></v-divider>
 
@@ -21,4 +33,10 @@
 
 <script setup>
 import FormCreateSecurityPolicy from '@/components/FormCreateSecurityPolicy.vue';
+import { useRouter } from "vue-router"
+
+const router = useRouter()
+const goBack = (path) => {
+  router.push({ path })
+}
 </script>

@@ -30,7 +30,7 @@
             :image="endpoint"
           >
             <template #button>
-              <v-btn small class="btn-edit" @click="handleEdit(ep)">
+              <v-btn small color="#1976D2" class="btn-edit" @click="handleEdit(ep)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
 
@@ -71,7 +71,7 @@ import CardVariant from "@/components/CardVariant.vue"
 import { useEndpointsStore } from "@/store/endpoints"
 import { ref, onMounted, computed } from "vue"
 import router from "@/router"
-import endpoint from "@/assets/axo_endpoint_assets.png"
+import endpoint from "@/assets/icon-endpoint.png"
 
 const endpointsStore = useEndpointsStore()
 const currentSearch = ref("")
@@ -130,7 +130,7 @@ const confirmDelete = async () => {
 <style scoped>
 /* Botón Editar */
 .btn-edit {
-  background-color: #11212d;
+  background-color: #040404;
   color: white;
   padding: 5px 15px;
   border-radius: 5px;
@@ -140,7 +140,7 @@ const confirmDelete = async () => {
 
 /* Botón Crear Nuevo Endpoint */
 .btn-create-endpoint {
-  background-color: #11212d;
+  background-color: #040404;
   color: white;
   padding: 5px 15px;
   border-radius: 5px;

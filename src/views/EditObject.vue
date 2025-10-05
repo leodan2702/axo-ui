@@ -70,7 +70,7 @@ const value = ref('0')
   background-color: #485d6d;
 }
 .btn-run {
-  background-color: #11212D;
+  background-color: #040404;
   color: white;
   padding: 5px 20px;
   border: none;

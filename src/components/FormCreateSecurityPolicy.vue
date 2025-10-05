@@ -7,11 +7,13 @@
       
       <!-- Name -->
       <v-text-field
+        counter="32"
         v-model="securityPoliciesStore.form.name"
         label="Policy Name"
         variant="filled"
-        :rules="[rules.required]"
+        :rules="[rules.required,rules.maxLength]"
         required
+        prepend-inner-icon="mdi-tag"
       />
 
       <!-- Roles -->
@@ -27,20 +29,21 @@
         variant="filled"
         :rules="[rules.minOne]"
         required
+        prepend-inner-icon="mdi-account-group"
       />
 
       <!-- Requiere autenticación -->
       <v-switch
         v-model="securityPoliciesStore.form.requires_authentication"
         label="Requires authentication?"
-        color="#11222eff"
+        color="#040404"
       />
 
       <!-- Botón Guardar -->
       <div class="d-flex mt-4" data-step="save-policy-button">
         <v-btn
           :loading="securityPoliciesStore.loading"
-          color="#11222eff"
+          color="#040404"
           size="large"
           type="submit"
           variant="elevated"
@@ -87,7 +90,8 @@ const snackbar = ref({ show: false, text: '', color: 'success' })
 
 const rules = {
   required: v => !!v || 'Field required',
-  minOne: v => (v && v.length > 0) || 'Select at least one role'
+  minOne: v => (v && v.length > 0) || 'Select at least one role',
+  maxLength: v => (!v || v.length <= 32) || 'Maximum 32 characters'
 }
 
 const route = useRoute()

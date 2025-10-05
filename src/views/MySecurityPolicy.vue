@@ -31,7 +31,7 @@
           >
             <template #button>
               <!-- Botón Editar -->
-              <v-btn small class="btn-edit" @click="handleEdit(policy)">
+              <v-btn small color="#1976D2" class="btn-edit" @click="handleEdit(policy)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
 
@@ -148,7 +148,7 @@ const confirmDelete = async () => {
 
 <style scoped>
 .btn-edit {
-  background-color: #11212d;
+  background-color: #040404;
   color: white;
   padding: 5px 15px;
   border: none;
@@ -176,7 +176,7 @@ const confirmDelete = async () => {
 }
 
 .btn-create-policy {
-  background-color: #11212d;
+  background-color: #040404;
   color: white;
   padding: 5px 15px;
   border: none;

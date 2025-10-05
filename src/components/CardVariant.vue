@@ -7,9 +7,9 @@
 
     <div class="textBox">
       <div class="textContent">
-        <div>
-          <p class="h1">{{ title }}</p>
-          <p class="p">{{ description }}</p>
+        <div class="textWrapper">
+          <p class="h1" :title="title">{{ title }}</p>
+          <p class="p" :title="description">{{ description }}</p>
         </div>
         <div class="d-flex align-center justify-space-between ml-5">
           <span class="span">
@@ -90,6 +90,7 @@ const props = defineProps({
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
 }
 
 .span {
@@ -101,10 +102,22 @@ const props = defineProps({
 .h1 {
   font-size: 16px;
   font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 
 .p {
   font-size: 12px;
   font-weight: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+.textWrapper {
+  max-width: calc(100% - 120px); 
+  overflow: hidden;
 }
 </style>

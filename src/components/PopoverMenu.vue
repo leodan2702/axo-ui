@@ -20,21 +20,23 @@
         <!-- prepend-icon="mdi-chevron-down" -->
         </template>
 
-        <v-card min-width="300">
-            <v-list>
+        <v-card min-width="300" class="menu-card">
+            <v-list class="user-header-section">
                 <v-list-item
                 prepend-avatar= "https://static.vecteezy.com/system/resources/previews/047/733/682/non_2x/grey-avatar-icon-user-avatar-photo-icon-social-media-user-icon-vector.jpg" 
                 :subtitle="userStore.user.username"
                 :title="userStore.user.fullname"
+                class="user-header-item"
                 >
                 </v-list-item>
             </v-list>
-            <v-divider></v-divider>
+            <v-divider class="menu-divider"></v-divider>
 
             <v-list
                 :lines="false"
                 density="compact"
                 nav
+                class="menu-options"
                 >
                 <v-list-item
                     v-for="(item, i) in items"
@@ -42,12 +44,13 @@
                     :value="item"
                     color="primary"
                     @click="handleItemClick(item)"
+                    class="menu-option-item"
                 >
                     <template v-slot:prepend>
-                    <v-icon :icon="item.icon"></v-icon>
+                    <v-icon :icon="item.icon" class="option-icon"></v-icon>
                     </template>
 
-                    <v-list-item-title v-text="item.text"></v-list-item-title>
+                    <v-list-item-title v-text="item.text" class="option-text"></v-list-item-title>
                 </v-list-item>
             </v-list>
         </v-card>
@@ -90,7 +93,7 @@ const confirmDialog = ref(false);
 
 const items = [
     { text: 'Notifications', icon: 'mdi-bell', route: '#', action: 'default' },
-    { text: 'Settings', icon: 'mdi-cogs', route: '/edit-profile', action: 'default' },
+    { text: 'Settings', icon: 'mdi-account-cog', route: '/edit-profile', action: 'default' },
     { text: 'Restart Tour', icon: 'mdi-restart', route: '#', action: 'restart-tour' },
     { text: 'Logout', icon: 'mdi-logout', route: '/', action: 'logout' },
 ];
@@ -99,10 +102,7 @@ const handleItemClick = (item) => {
     switch (item.action) {
         case 'restart-tour':
             confirmDialog.value = true;
-            menu.value = false; // Cerrar el menú
-            break;
-        case 'help':
-            showHelp();
+            menu.value = false;
             break;
         case 'logout':
             handleLogout();
@@ -111,13 +111,6 @@ const handleItemClick = (item) => {
             goTo(item.route);
             break;
     }
-};
-
-const showHelp = () => {
-    // Aquí puedes implementar la lógica para mostrar ayuda
-    // Por ejemplo, abrir un diálogo de ayuda o redirigir a una página de ayuda
-    alert('Funcionalidad de ayuda - Próximamente');
-    menu.value = false;
 };
 
 const handleLogout = () => {
@@ -195,6 +188,85 @@ const confirmRestartTour = () => {
 
 
 </script>
+
+
+<style scoped>
+/* === TARJETA DEL MENÚ - ESTILOS CON DEEP === */
+.menu-card {
+    border-radius: 16px !important;
+    box-shadow: 0 20px 60px #1b1e20 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    overflow: hidden;
+    margin-top: 8px;
+}
+.menu-card {
+    background-color: #1b1e20  !important;
+}
+
+
+.user-header-section {
+    padding: 8px 0;
+    background: transparent !important;
+}
+
+.user-header-item {
+    padding: 16px 20px;
+    background: transparent !important;
+}
+
+.user-header-item :deep(.v-list-item-title) {
+    font-weight: 600;
+    font-size: 15px;
+    color: #878080 !important;
+}
+
+.user-header-item :deep(.v-list-item-subtitle) {
+    font-size: 13px;
+    color: #cbd5e1 !important;
+    font-weight: 400;
+}
+
+.menu-divider {
+    margin: 0;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    height: 1px;
+}
+.menu-options {
+    padding: 8px;
+    background: transparent !important;
+}
+
+.menu-option-item {
+    border-radius: 10px !important;
+    margin: 2px 4px;
+    padding: 0 12px;
+    height: 44px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: transparent !important;
+}
+
+.menu-option-item:hover {
+    background: rgba(160, 204, 225, 0.1) !important;
+    transform: translateX(4px);
+    border-left: 3px solid #777a7b;
+}
+
+.option-icon {
+    color: #a4a5a6 !important;
+    font-size: 18px;
+    margin-right: 12px;
+}
+
+.option-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #a4a5a6 !important;
+    letter-spacing: -0.1px;
+}
+
+</style>
+
 <style scoped>
 /* --- Estilo Glassmorphism para la ventana de reinicio --- */
 .v-dialog .v-card {

@@ -6,13 +6,13 @@
         <div class="d-flex align-center mb-6">
           <!-- Botón Return -->
           <v-btn
-            color="grey-darken-2"
+            color="040404"
             variant="outlined"
             @click="goBack('/my-objects')"
             class="mr-4"
           >
-            <v-icon start>mdi-arrow-left</v-icon>
-            Return
+          <v-icon start>mdi-arrow-left-circle</v-icon>
+            Back
           </v-btn>
 
           <h1 class="page-title">Create Active Object</h1>

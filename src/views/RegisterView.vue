@@ -7,7 +7,7 @@
                 width="100"
                 height="100"
                 class="d-flex align-center justify-center"
-                color="#06141B"
+                color="#040404"
                 style="border-radius: 50%; position: absolute; top: -50px; z-index: 10;"
             >
             <v-img :src="logo"></v-img>
@@ -85,13 +85,13 @@
                     data-step="register-button"
                     :loading="isLoading"
                     :disabled="isLoading"
-                    color="#06141B"
+                    color="#040404"
                     class="w-100 text-white mb-5" 
                     type="submit" >Sign Up</v-btn>
                     <div>
                         <v-text class="text-disabled">Already on Axo?</v-text>
                         <router-link data-step="login-button" to="/" class="text-decoration-none font-weight-bold"
-                        style="color: #06141B"
+                        style="color: #040404"
                         >
                         Login
                         </router-link>

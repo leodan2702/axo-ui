@@ -14,12 +14,13 @@
     >
       <!-- Nombre del rol -->
       <v-text-field
+        counter="32"
         v-model="rolesStore.form.name"
         label="Role Name"
         variant="filled"
-        :rules="[rules.required]"
+        :rules="[rules.required,rules.maxLength]"
         required
-        prepend-inner-icon="mdi-account"
+        prepend-inner-icon="mdi-tag"
       />
 
       <!-- Descripción -->
@@ -30,7 +31,7 @@
         rows="2"
         :rules="[rules.required]"
         required
-        prepend-inner-icon="mdi-text"
+        prepend-inner-icon="mdi-file-document-edit"
       />
 
       <!-- Permisos -->
@@ -43,7 +44,7 @@
         clearable
         variant="filled"
         :rules="[rules.minOne]"
-        prepend-inner-icon="mdi-lock"
+        prepend-inner-icon="mdi-lock-open-variant"
         required
         @focus="permissionsTouched = true"
         @change="permissionsTouched = true"
@@ -53,12 +54,12 @@
       <div class="d-flex mt-4" data-step="rol-button">
         <v-btn
           :loading="rolesStore.loading"
-          color="#11222eff"
+          color="#040404"
           size="large"
           type="submit"
           variant="elevated"
           block
-          :disabled="!canSubmit"
+          :disabled="!isValidForm"
         >
           {{ isEditing ? 'Update' : 'Save' }}
         </v-btn>
@@ -103,7 +104,8 @@ const snackbar = ref({
 
 const rules = {
   required: v => !!v || 'Field required',
-  minOne: v => (!permissionsTouched.value || (v && v.length > 0)) || 'Select at least one permission'
+  minOne: v => (!permissionsTouched.value || (v && v.length > 0)) || 'Select at least one permission',
+  maxLength: v => (!v || v.length <= 32) || 'Maximum 32 characters'
 }
 
 const route = useRoute()

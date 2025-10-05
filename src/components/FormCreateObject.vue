@@ -12,10 +12,12 @@
     >
       <!-- Alias -->
       <v-text-field
+        counter="32"
         v-model="activeObjectsStore.form.axo_alias"
         label="Alias"
         variant="filled"
         prepend-inner-icon="mdi-tag"
+        :rules="[rules.maxLength]"
       />
 
       <!-- Endpoint asociado -->
@@ -26,7 +28,7 @@
         item-value="endpoint_id"
         label="Endpoint"
         variant="filled"
-        prepend-inner-icon="mdi-cube-outline"
+        prepend-inner-icon="mdi-server"
       />
 
       <!-- Servicio (guía) -->
@@ -50,7 +52,7 @@
       item-value="microservice_id"
       label="Microservice"
       variant="filled"
-      prepend-inner-icon="mdi-cogs"
+      prepend-inner-icon="mdi-view-grid"
       :disabled="!selectedService"
       @update:model-value="onMicroserviceChange"
     />
@@ -92,9 +94,9 @@
       <!-- Botón Guardar -->
       <div class="d-flex mt-4">
         <v-btn
-          data-step="persistency-button"
+          d11222effep="persistency-button"
           :loading="activeObjectsStore.loading"
-          color="#11222eff"
+          color="#040404"
           size="large"
           type="submit"
           variant="elevated"
@@ -150,7 +152,8 @@ const snackbar = ref({ show: false, text: '', color: 'success' })
 const rules = {
   required: v => !!v || 'Field required',
   numeric: v => !isNaN(v) || 'Must be a number',
-  codeRequired: v => (v && v.trim().length > 0) || 'Code is required'
+  codeRequired: v => (v && v.trim().length > 0) || 'Code is required',
+  maxLength: v => (!v || v.length <= 32) || 'Maximum 32 characters'
 }
 
 const route = useRoute()
