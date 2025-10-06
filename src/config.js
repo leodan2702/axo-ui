@@ -1,4 +1,5 @@
 // URLs de APIs
+export const AXO_BACKEND_URL = import.meta.env.VITE_AXO_BACKEND_URL || 'http://localhost:17000';
 export const CRYPTOMESH_URL = import.meta.env.VITE_CRYPTOMESH_URL || 'http://localhost:19000';
 export const SHIELDX_URL = import.meta.env.VITE_SHIELDX_URL || 'http://localhost:20000';
 
