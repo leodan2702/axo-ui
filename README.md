@@ -45,6 +45,9 @@ VITE_CRYPTOMESH_API_VERSION=v1
 # ShieldX API (Choreography)
 VITE_SHIELDX_URL=http://localhost:20000
 VITE_API_VERSION=v1
+
+# Axo_Backend
+VITE_AXO_BACKEND_URL=http://localhost:17000
 ```
 
 ---
