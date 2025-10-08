@@ -29,7 +29,7 @@
             :image="serv"
           >
             <template #button>
-              <v-btn small color="#1976D2" class="btn-edit" @click="handleEdit(service)">
+              <v-btn small color="#fffff" class="btn-edit" @click="handleEdit(service)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
 
@@ -128,7 +128,7 @@ const confirmDelete = async () => {
 <style scoped>
 /* Botón Editar */
 .btn-edit {
-  background-color: #040404;
+  background-color: #1976D2;
   color: white;
   padding: 5px 15px;
   border-radius: 5px;
