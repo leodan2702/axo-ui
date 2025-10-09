@@ -176,7 +176,7 @@ const createBucket = () => {
       type: "Bucket", 
       icon: bucket,
       sink_bucket_id: "",
-      // sink_key: "", // 🔒 Comentado
+      // sink_key: "", 
     },
   })
 }
@@ -206,7 +206,7 @@ const deleteSelected = () => {
 /* Teclas */
 const onKeyDown = (e) => {
   const tag = e.target.tagName.toLowerCase()
-  if (tag === "input" || tag === "textarea") return // 👈 evita conflicto
+  if (tag === "input" || tag === "textarea") return 
 
   if (e.key === "Delete" || e.key === "Backspace") {
     deleteSelected()
@@ -252,7 +252,7 @@ const onDrop = async (event) => {
       alias: data.alias,
       method: data.functionData.name,
 
-      // 👀 logs de los campos críticos
+      
       axo_bucket_id: data.parentAO?.axo_bucket_id || null,
       axo_endpoint_id: data.parentAO?.axo_endpoint_id || null,
 
@@ -418,12 +418,12 @@ const buildChoreographyYAML = () => {
         writerByBucketNodeId.set(t.id, writerTrig.name)
 
         const sinkBucketId = t.originData.sink_bucket_id
-        // const sinkKey      = t.originData.sink_key // 🔒 Comentado
+        // const sinkKey      = t.originData.sink_key 
         if (sinkBucketId /* && sinkKey */) {
           writerTrig.rule.parameters.call = {
             ...(writerTrig.rule.parameters.call || {}),
             sink_bucket_id: sinkBucketId,
-            // sink_key: sinkKey, // 🔒 Comentado
+            // sink_key: sinkKey, 
           }
         }
       }
@@ -434,12 +434,12 @@ const buildChoreographyYAML = () => {
       const readerTrig = triggerByNodeId.get(t.id)
       if (readerTrig) {
         const sourceBucketId = s.originData.sink_bucket_id
-        // const sourceKey      = s.originData.sink_key // 🔒 Comentado
+        // const sourceKey      = s.originData.sink_key 
         if (sourceBucketId /* && sourceKey */) {
           readerTrig.rule.parameters.init = {
             ...(readerTrig.rule.parameters.init || {}),
             source_bucket_id: sourceBucketId,
-            // source_key: sourceKey, // 🔒 Comentado
+            // source_key: sourceKey, 
           }
         }
 
@@ -549,12 +549,12 @@ const buildChoreographyJSON = () => {
       const readerTrig = triggerByNodeId.get(t.id)
       if (readerTrig) {
         const sourceBucketId = s.originData.sink_bucket_id
-        // const sourceKey      = s.originData.sink_key // 🔒 Comentado
+        // const sourceKey      = s.originData.sink_key 
         if (sourceBucketId /* && sourceKey */) {
           readerTrig.rule.parameters.call = {
             ...(readerTrig.rule.parameters.call || {}),
             source_bucket_id: sourceBucketId,
-            // source_key: sourceKey, // 🔒 Comentado
+            // source_key: sourceKey, 
           }
         }
 
@@ -606,12 +606,12 @@ const handleSaveConfig = (updated) => {
         ...node,
         data: {
           ...node.data,
-          label: updated.sink_bucket_id || node.data.label // 👈 mostramos el nombre del bucket
+          label: updated.sink_bucket_id || node.data.label 
         },
         originData: {
           ...node.originData,
           sink_bucket_id: updated.sink_bucket_id,
-          // sink_key: updated.sink_key, // 🔒 Comentado
+          // sink_key: updated.sink_key, 
         }
       }
     } else {

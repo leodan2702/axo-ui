@@ -1,29 +1,42 @@
 <template>
-  <div class="card">
-    <!-- Imagen dinámica -->
-    <div class="img">
-      <img v-if="image" :src="image" alt="Active Object" />
-    </div>
+  <v-card
+    class="mx-auto mb-4"
+    elevation="4"
+    rounded="xl"
+    max-width="800"
+    height="90"
+    hover
+  >
+    <div class="d-flex align-center h-100 px-3">
+      <!-- Imagen dinámica -->
+      <v-avatar size="50" class="mr-4" rounded>
+        <v-img v-if="image" :src="image" alt="Active Object" cover />
+        <v-icon v-else size="32" color="grey">mdi-image-off</v-icon>
+      </v-avatar>
 
-    <div class="textBox">
-      <div class="textContent">
-        <div class="textWrapper">
-          <p class="h1" :title="title">{{ title }}</p>
-          <p class="p" :title="description">{{ description }}</p>
-        </div>
-        <div class="d-flex align-center justify-space-between ml-5">
-          <span class="span">
-            <v-icon small>mdi-account</v-icon>
-            {{ autor }}
-          </span>
-          <slot name="button"></slot>
-        </div>
+      
+      <div class="flex-grow-1 overflow-hidden">
+        <v-card-title class="entity-name text-h6 mb-0">
+          {{ truncatedTitle }}
+        </v-card-title>
+        <v-card-subtitle class="text-body-2">
+          {{ description }}
+        </v-card-subtitle>
       </div>
+      <v-card-actions class="d-flex align-center justify-end ml-4">
+        <v-chip size="small" color="grey-lighten-2" text-color="black" class="mr-2">
+          <v-icon size="14" start>mdi-account</v-icon>
+          {{ autor }}
+        </v-chip>
+        <slot name="button"></slot>
+      </v-card-actions>
     </div>
-  </div>
+  </v-card>
 </template>
 
 <script setup>
+import { computed } from 'vue'  
+ 
 const props = defineProps({
   title: {
     type: String,
@@ -42,82 +55,25 @@ const props = defineProps({
     default: null
   }
 })
+
+const truncatedTitle = computed(() =>
+  props.title.length > 32 ? props.title.slice(0, 32) + '…' : props.title
+)
 </script>
 
 <style scoped>
-.card {
-  width: 100%;
-  max-width: 800px;
-  height: 90px;
-  background: #d9d8d8;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: left;
-  transition: 0.4s ease-in-out;
-  margin-bottom: 15px;
+.v-card {
+  transition: transform 0.3s ease;
 }
 
-.card:hover {
-  cursor: pointer;
-  transform: scale(1.05);
+.v-card:hover {
+  transform: scale(1.03);
 }
 
-.img {
-  width: 50px;
-  height: 50px;
-  margin-left: 10px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.textBox {
-  width: calc(100% - 90px);
-  margin-left: 10px;
-  color: rgb(0, 0, 0);
-}
-
-.textContent {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.span {
-  font-size: 10px;
-  color: #4a4a4a00;
-  margin-right: 5px;
-}
-
-.h1 {
-  font-size: 16px;
-  font-weight: bold;
+.entity-name {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: block;
-}
-
-.p {
-  font-size: 12px;
-  font-weight: normal;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: block;
-}
-.textWrapper {
-  max-width: calc(100% - 120px); 
-  overflow: hidden;
+  max-width: 100%;
 }
 </style>
