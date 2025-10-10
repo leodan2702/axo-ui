@@ -177,7 +177,7 @@ const loadForm = (editQuery) => {
 }
 
 const availableImages = ref([
-  "nachocode/axo:endpoint-0.0.3a1"
+  "nachocode/axo:endpoint-0.0.4a3"
 ])
 
 // --- Al montar ---
