@@ -1,0 +1,105 @@
+
+
+services:
+  axo-ui:
+    # Corresponds to: docker build -f ./Dockerfile -t $IMAGE .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${AXO_UI_IMAGE:-axo:ui}
+    container_name: axo-ui
+    # Corresponds to: -p $PORT:80
+    ports:
+      - "${PORT:-80}:80"
+    # Corresponds to: --network=mictlanx
+    networks:
+      - axo-net
+    env_file:
+      - .env.dev
+
+  axo-backend:
+    image: ${AXO_BACKEND_IMAGE:-axo:backend}
+    container_name: axo-backend
+    # Use an .env file to manage environment variables for flexibility.
+    env_file:
+      - .env.dev
+    ports:
+      # Maps the host port (from .env, defaults to 17000) to the container port.
+      - "${AXO_BACKEND_API_PORT:-17000}:${AXO_BACKEND_API_PORT:-17000}"
+    command: >
+      uvicorn axobackend.main:app
+      --host ${AXO_BACKEND_API_HOST:-0.0.0.0}
+      --port ${AXO_BACKEND_API_PORT:-17000}
+      --log-level debug
+
+    networks:
+      - axo-net
+
+  axo-db:
+    image: ${AXO_DB_IMAGE:-mongo:latest}
+    container_name: axo-db
+    ports:
+      - "${MONGO_PORT:-27018}:27017"
+    volumes:
+      - axo-db-data:/data/db
+    restart: unless-stopped
+    networks:
+      - axo-net
+
+  cryptomesh:
+    image: cryptomesh:api
+    container_name: cryptomesh
+    depends_on:
+      - axo-db
+      # - crypto-mesh-broker
+    command: ["uvicorn", "cryptomesh.server:app", "--host", "0.0.0.0", "--port", "19000"]
+    ports:
+      - "${CRYPTO_MESH_PORT:-19000}:19000"
+    env_file:
+      - .env.dev
+    # environment:
+
+    # volumes:
+      # - cryptomesh-vol:/app
+    restart: unless-stopped
+    networks:
+      - axo-net
+
+
+  shieldx:
+    # image: ${API_IMAGE:-edgar821/shieldx-api:latest}
+    container_name: shieldx
+    image: shieldx:api-0.0.1a2
+    networks:
+      - axo-net
+    environment:
+      - MONGO_URL=mongodb://axo-db:27017/shieldx
+      - MONGO_DATABASE=shieldx
+      - SHIELDX_LOG_PATH=/app/log
+      - LOG_LEVEL=DEBUG
+      - LOG_ROTATION_WHEN=h
+      - LOG_ROTATION_INTERVAL=24
+      - SHIELDX_ENV=prod
+    ports:
+      - "${SHIELDX_PORT:-20000}:20000"
+    # If you want to persist logs, uncomment the following lines and create a /log folder in the host
+    # You also need to set ownership/permissions to log folder  in the host machine
+    # sudo chown 101:101 /log
+    # volumes:
+      # - /log:/app/log:rw
+    restart: unless-stopped
+    # For testing purposes, you can run a sleep command to keep the container running
+    # command: ["sleep", "infinity"]
+    command: ["uvicorn", "shieldx.server:app", "--host", "0.0.0.0", "--port", "${SHIELDX_PORT:-20000}"]
+
+# Defines the network used by the service.
+# We assume 'mictlanx' is a pre-existing external network.
+# If you want Compose to create it, remove the 'external: true' line.
+networks:
+  axo-net:
+    external: true
+
+volumes:
+  axo-db-data:
+    driver: local
+    external: false
