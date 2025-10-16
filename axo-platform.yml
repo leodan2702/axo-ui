@@ -69,17 +69,19 @@ services:
   shieldx:
     # image: ${API_IMAGE:-edgar821/shieldx-api:latest}
     container_name: shieldx
-    image: shieldx:api-0.0.1a2
+    image: shieldx:api-0.0.1a0
     networks:
       - axo-net
-    environment:
-      - MONGO_URL=mongodb://axo-db:27017/shieldx
-      - MONGO_DATABASE=shieldx
-      - SHIELDX_LOG_PATH=/app/log
-      - LOG_LEVEL=DEBUG
-      - LOG_ROTATION_WHEN=h
-      - LOG_ROTATION_INTERVAL=24
-      - SHIELDX_ENV=prod
+    env_file:
+      - .env.dev
+    # environment:
+    #   - MONGO_URI=mongodb://axo-db:27017/shieldx
+    #   - MONGO_DATABASE=shieldx
+    #   - SHIELDX_LOG_PATH=/app/log
+    #   - LOG_LEVEL=DEBUG
+    #   - LOG_ROTATION_WHEN=h
+    #   - LOG_ROTATION_INTERVAL=24
+    #   - SHIELDX_ENV=prod
     ports:
       - "${SHIELDX_PORT:-20000}:20000"
     # If you want to persist logs, uncomment the following lines and create a /log folder in the host
