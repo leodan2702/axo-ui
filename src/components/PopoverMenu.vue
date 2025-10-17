@@ -92,7 +92,7 @@ const menu = ref(false);
 const confirmDialog = ref(false);
 
 const items = [
-    { text: 'Notifications', icon: 'mdi-bell', route: '#', action: 'default' },
+//  { text: 'Notifications', icon: 'mdi-bell', route: '#', action: 'default' },
     { text: 'Settings', icon: 'mdi-account-cog', route: '/edit-profile', action: 'default' },
     { text: 'Restart Tour', icon: 'mdi-restart', route: '#', action: 'restart-tour' },
     { text: 'Logout', icon: 'mdi-logout', route: '/', action: 'logout' },
