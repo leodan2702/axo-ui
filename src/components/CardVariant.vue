@@ -23,11 +23,7 @@
           {{ description }}
         </v-card-subtitle>
       </div>
-      <v-card-actions class="d-flex align-center justify-end ml-4">
-        <v-chip size="small" color="grey-lighten-2" text-color="black" class="mr-2">
-          <v-icon size="14" start>mdi-account</v-icon>
-          {{ autor }}
-        </v-chip>
+      <v-card-actions>
         <slot name="button"></slot>
       </v-card-actions>
     </div>
