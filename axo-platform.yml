@@ -16,6 +16,24 @@ services:
       - axo-net
     env_file:
       - .env.dev
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - "node.labels.disys_pool == true"   # Etiqueta en disys0–9 y disys17–20
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 8G
+        reservations:
+          cpus: "2.0"
+          memory: 4G
+
 
   axo-backend:
     image: ${AXO_BACKEND_IMAGE:-axo:backend}
@@ -34,17 +52,51 @@ services:
 
     networks:
       - axo-net
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - "node.labels.disys_pool == true"
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 8G
+        reservations:
+          cpus: "2.0"
+          memory: 4G
 
   axo-db:
     image: ${AXO_DB_IMAGE:-mongo:latest}
     container_name: axo-db
     ports:
-      - "${MONGO_PORT:-27018}:27017"
+      - "${MONGO_PORT:-27020}:27017"
     volumes:
       - axo-db-data:/data/db
     restart: unless-stopped
     networks:
       - axo-net
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - "node.labels.disys_pool == true"
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 8G
+        reservations:
+          cpus: "2.0"
+          memory: 4G
 
   cryptomesh:
     image: cryptomesh:api
@@ -64,12 +116,29 @@ services:
     restart: unless-stopped
     networks:
       - axo-net
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - "node.labels.disys_pool == true"
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 8G
+        reservations:
+          cpus: "2.0"
+          memory: 4G
 
 
   shieldx:
     # image: ${API_IMAGE:-edgar821/shieldx-api:latest}
     container_name: shieldx
-    image: shieldx:api-0.0.1a0
+    image: shieldx:api-0.0.1a2
     networks:
       - axo-net
     env_file:
@@ -93,7 +162,23 @@ services:
     # For testing purposes, you can run a sleep command to keep the container running
     # command: ["sleep", "infinity"]
     command: ["uvicorn", "shieldx.server:app", "--host", "0.0.0.0", "--port", "${SHIELDX_PORT:-20000}"]
-
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - "node.labels.disys_pool == true"
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 8G
+        reservations:
+          cpus: "2.0"
+          memory: 4G
 # Defines the network used by the service.
 # We assume 'mictlanx' is a pre-existing external network.
 # If you want Compose to create it, remove the 'external: true' line.
