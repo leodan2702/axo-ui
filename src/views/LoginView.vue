@@ -109,10 +109,10 @@ const SignIn = async () => {
     snackbar.message = loginResult.message;
     snackbar.show = true;
     isLoading.value = true;
+
     if (!loginResult.isOnError) {
-      setTimeout(async () => {
-        await router.push("/home");
-      }, 1500);
+      isLoading.value = true;
+      await router.replace({ name: 'Home' });
     }
   } catch (error) {
     console.error("Error en login:", error);
