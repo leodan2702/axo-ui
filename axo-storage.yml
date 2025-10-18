@@ -8,7 +8,7 @@ services:
     networks:
       - axo-net
     ports:
-      - "60666:60666"
+      - "60667:60667"
     volumes:
       - mictlanx-router-0-logs:/log
 
@@ -25,6 +25,20 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+    deploy: 
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-pub"
+
+        - "traefik.http.routers.mxrouterprod.rule=Host(`apix.tamps.cinvestav.mx`) && PathPrefix(`/mictlanxx`)"
+        - "traefik.http.routers.mxrouterprod.entrypoints=websecure"
+        - "traefik.http.routers.mxrouterprod.tls=true"
+        - "traefik.http.routers.mxrouterprod.tls.certresolver=resolverx"
+        - "traefik.http.routers.mxrouterprod.middlewares=strip-api-prefixprod"
+
+        - "traefik.http.middlewares.strip-api-prefixprod.stripprefix.prefixes=/mictlanxx"
+
+        - "traefik.http.services.mxrouterprod.loadbalancer.server.port=60667"
 
   mictlanx-summoner-0:
     image: nachocode/mictlanx:summoner
@@ -80,7 +94,7 @@ services:
       # === Peers bootstrapping ===
       MICTLANX_PEERS_PROTOCOL: "http"
       MICTLANX_PEERS_API_VERSION: "4"
-      MICTLANX_PEERS: "mictlanx://mictlanx-peer-0@mictlanx-peer-0:25000,mictlanx-peer-1@mictlanx-peer-1:25001/?protocol=http&api_version=4"
+      MICTLANX_PEERS: "mictlanx://mictlanx-peer-0@mictlanx-peer-0:35000,mictlanx-peer-1@mictlanx-peer-1:35001/?protocol=http&api_version=4"
 
       # === Default peer resources ===
       DEFAULT_PEER_MEMORY: "2GB"
@@ -95,7 +109,7 @@ services:
       MAX_IDLE_TIME: "10s"
       QUEUE_TICK_TIMEOUT: "5s"
       MAX_TIMEOUT_TO_RECOVER: "5s"
-      SUMMONER_BASE_PORT: "25000"
+      SUMMONER_BASE_PORT: "35000"
       SUMMONER_BASE_PROTOCOL: "http"
       SUMMONER_PHYSICAL_NODES_INDEXES: "0,2,3,4,5,6,7,8,9"
       DEBUG: "True"  # internal SPM params flag (distinct from MICTLANX_DEBUG)
@@ -104,7 +118,7 @@ services:
       PEERS_CONFIG_PATH: ""
       MAX_TIMEOUT_TO_SAVE_PEER_CONFIG: "30min"
       PEER_ELASTIC: "True"
-      SUMMONER_PEER_DOCKER_IMAGE: "nachocode/mictlanx:peer-0.1.0a1"
+      SUMMONER_PEER_DOCKER_IMAGE: ${SUMMONER_PEER_DOCKER_IMAGE:-nachocode/mictlanx:peer-0.1.0a2}
       PEER_MIN_INTERVAL_TIME: "5"
       PEER_MAX_INTERVAL_TIME: "20"
       DAEMON_TICK_TIMEOUT: "10s"

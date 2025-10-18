@@ -10,7 +10,7 @@ services:
     container_name: axo-ui
     # Corresponds to: -p $PORT:80
     ports:
-      - "${PORT:-80}:80"
+      - "${PORT:-80}:9000"
     # Corresponds to: --network=mictlanx
     networks:
       - axo-net
@@ -25,7 +25,7 @@ services:
         window: 120s
       placement:
         constraints:
-          - "node.labels.disys_pool == true"   # Etiqueta en disys0–9 y disys17–20
+          - "node.labels.node_id == disys20"   # Etiqueta en disys0–9 y disys17–20
       resources:
         limits:
           cpus: "4.0"
@@ -34,6 +34,13 @@ services:
           cpus: "2.0"
           memory: 4G
 
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.axo-ui.rule=Host(`muyal.tamps.cinvestav.mx`) && (PathPrefix(`/axo`)"
+        - "traefik.http.routers.axo-ui.entrypoints=websecure"
+        - "traefik.http.routers.axo-ui.tls=true"
+        - "traefik.http.routers.axo-ui.tls.certresolver=resolverx"
+        - "traefik.http.services.axo-ui.loadbalancer.server.port=9000"
 
   axo-backend:
     image: ${AXO_BACKEND_IMAGE:-axo:backend}
@@ -61,7 +68,7 @@ services:
         window: 120s
       placement:
         constraints:
-          - "node.labels.disys_pool == true"
+          - "node.labels.node_id == disys2"
       resources:
         limits:
           cpus: "4.0"
@@ -69,7 +76,13 @@ services:
         reservations:
           cpus: "2.0"
           memory: 4G
-
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.axo-ui.rule=Host(`apix.tamps.cinvestav.mx`) && (PathPrefix(`/axobackend`)"
+        - "traefik.http.routers.axo-ui.entrypoints=websecure"
+        - "traefik.http.routers.axo-ui.tls=true"
+        - "traefik.http.routers.axo-ui.tls.certresolver=resolverx"
+        - "traefik.http.services.axo-ui.loadbalancer.server.port=17000"
   axo-db:
     image: ${AXO_DB_IMAGE:-mongo:latest}
     container_name: axo-db
