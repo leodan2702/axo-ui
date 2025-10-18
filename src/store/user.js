@@ -29,9 +29,22 @@ export const useUserStore = defineStore('users',() => {
                 body: JSON.stringify(body),
             })
             if (response.ok) {
-                user.value = await response.json();
+                const data = await response.json();
+
+            const token =
+                    data?.token ??
+                    data?.access_token ??
+                    data?.credentials?.token ??
+                    data?.user?.token ??
+                    null;
+            
                 
-                return {color:"success",isOnError:false, message:"Login successfully completed."}; 
+                    user.value = data?.user ?? data;
+            
+                
+                    if (token) localStorage.setItem('auth_token', token);
+            
+            return { color:"success", isOnError:false, message:"Login successfully completed.", token };
             } else {
                 const message = (await response.json())?.detail ?? "Uknown error."
                 // await (response.json().then(x=>x["detail"]) )
@@ -94,7 +107,9 @@ export const useUserStore = defineStore('users',() => {
 
     //funcion logout
     function logout () {
-        user.value = null;
+        user.value = {};
+        // limpia el token para que el guard bloquee rutas protegidas
+        localStorage.removeItem('auth_token');
     }
     return { login, register, logout, user }
 },
