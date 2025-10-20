@@ -8,7 +8,7 @@ services:
     networks:
       - axo-net
     ports:
-      - "60667:60667"
+      - "60666:60666"
     volumes:
       - mictlanx-router-0-logs:/log
 

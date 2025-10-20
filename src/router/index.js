@@ -13,6 +13,8 @@ import Roles from '@/views/MyRoles.vue'
 import SecurityPolicy from '@/views/MySecurityPolicy.vue'
 import CreateSecurityPolicy from '@/views/CreateSecurityPolicy.vue'
 import Services from '@/views/MyServices.vue'
+import Faq from '@/views/FaqView.vue'
+import help from '@/views/HelpContactView.vue'
 
 import { createRouter, createWebHistory } from 'vue-router'
 import DesignGraph from '@/views/DesignGraph.vue'
@@ -32,6 +34,8 @@ const routes = [
   { path: '/create-object', name: 'CreateObject', component: CreateObject, meta: { requiresAuth: true } },
   { path: '/edit-object', name: 'EditObject', component: EditObject, meta: { requiresAuth: true } },
   { path: '/edit-profile', name: 'EditProfile', component: EditProfile, meta: { requiresAuth: true } },
+  { path: '/faq', name: 'faq', component: Faq, meta: {requiresAuth: true}},
+  { path: '/help', name: 'help', component: help, meta: {requiresAuth: true}},
 
   { path: '/endpoints', name: 'Endpoints', component: Endpoints, meta: { requiresAuth: true } },
   { path: '/create-endpoint', name: 'CreateEndpoint', component: CreateEndpoint, meta: { requiresAuth: true } },

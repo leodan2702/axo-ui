@@ -26,18 +26,50 @@
         </h3>
         <v-row dense>
           <!-- sink_bucket_id -->
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="form.sink_bucket_id"
-              label="Sink Bucket ID"
-              hint="ID del bucket donde se almacenará el resultado"
-              persistent-hint
-              variant="outlined"
-              density="comfortable"
-              clearable
-              prepend-inner-icon="mdi-bucket"
-            />
-          </v-col>
+          <!-- sink_bucket_id -->
+<v-col cols="12" md="6">
+  <v-text-field
+    v-model="form.sink_bucket_id"
+    label="Bucket ID"
+    hint="ID of the bucket where the result will be stored"
+    persistent-hint
+    variant="outlined"
+    density="comfortable"
+    clearable
+    prepend-inner-icon="mdi-bucket"
+  >
+    <!-- Ícono abrir en nueva pestaña (solo si hay valor) -->
+    <template #append-inner>
+      <v-tooltip
+        v-if="hasSinkBucket"
+        text="Open bucket metadata in a new tab"
+        location="top"
+      >
+        <template #activator="{ props }">
+          <v-icon
+            v-bind="props"
+            aria-label="Open bucket metadata in a new tab"
+            class="open-link-icon ml-1"
+            role="button"
+            tabindex="0"
+            @click="openSinkMetadata"
+            @keyup.enter="openSinkMetadata"
+          >
+            mdi-open-in-new
+          </v-icon>
+        </template>
+      </v-tooltip>
+
+      <v-icon
+        v-else
+        class="open-link-icon--disabled ml-1"
+      >
+        mdi-open-in-new
+      </v-icon>
+    </template>
+  </v-text-field>
+</v-col>
+
 
           <!-- sink_key -->
           <!-- <v-col cols="12" md="6">
@@ -84,7 +116,7 @@
 </template>
 
 <script setup>
-import { reactive, watch } from "vue"
+import { reactive, watch,computed  } from "vue"
 
 const props = defineProps({
   bucket: { type: Object, required: true }, // el nodo bucket seleccionado
@@ -106,6 +138,18 @@ watch(
   },
   { immediate: true }
 )
+
+
+const hasSinkBucket = computed(() => !!String(form.sink_bucket_id || "").trim())
+
+const openSinkMetadata = () => {
+  const raw = String(form.sink_bucket_id || "").trim()
+  if (!raw) return
+  const bucketId = encodeURIComponent(raw)
+  const url = `https://apix.tamps.cinvestav.mx/mictlanxx/api/v4/buckets/${bucketId}/metadata`
+  // Abrir en nueva pestaña de manera segura
+  window.open(url, "_blank", "noopener")
+}
 
 const saveConfig = () => {
   emit("save", {

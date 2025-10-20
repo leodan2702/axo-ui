@@ -5,7 +5,7 @@ services:
     # Corresponds to: docker build -f ./Dockerfile -t $IMAGE .
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ${AXO_UI_DOCKERFILE:-Dockerfile}
     image: ${AXO_UI_IMAGE:-axo:ui}
     container_name: axo-ui
     # Corresponds to: -p $PORT:80
@@ -119,7 +119,7 @@ services:
       # - crypto-mesh-broker
     command: ["uvicorn", "cryptomesh.server:app", "--host", "0.0.0.0", "--port", "19000"]
     ports:
-      - "${CRYPTO_MESH_PORT:-19000}:19000"
+      - "${CRYPTOMESH_PORT:-19000}:19000"
     env_file:
       - .env.dev
     # environment:
