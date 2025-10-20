@@ -9,7 +9,6 @@ export default defineConfig({
     vue(),
     vuetify()
   ],
-  base: '/axo/',
   resolve: {
     alias: {
       '@': '/src',

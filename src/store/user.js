@@ -86,6 +86,7 @@ export const useUserStore = defineStore('users',() => {
             console.log("BODY",body)
             const response = await fetch(`${AXO_BACKEND_URL}/auth/signup`, {
                 method: 'POST',
+                credentials: "include",
                 headers: {
                     'Content-Type': 'application/json',
                 },

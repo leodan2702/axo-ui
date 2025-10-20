@@ -5,9 +5,4 @@ if [ "${NO_CACHE}" = "true" ]; then
     docker build --no-cache -f Dockerfile -t ${IMAGE} .
     exit $?
 fi
-else
-    docker build -f Dockerfile -t ${IMAGE} .
-    exit $?
-fi
-
-# docker build -f Dockerfile -t ${IMAGE} .
+docker build -f Dockerfile -t ${IMAGE} .

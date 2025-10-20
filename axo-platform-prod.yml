@@ -1,0 +1,173 @@
+
+
+services:
+  axo-ui:
+    # Corresponds to: docker build -f ./Dockerfile -t $IMAGE .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${AXO_UI_IMAGE:-nachocode/axo:ui-0.0.1a1}
+    container_name: axo-ui
+    # Corresponds to: -p $PORT:80
+    # ports:
+      # - "${PORT:-80}:80"
+    # Corresponds to: --network=mictlanx
+    networks:
+      - axo-net
+      - traefik-pub
+    env_file:
+      - .env.prod
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - "node.labels.node_id == disys20"   # Etiqueta en disys0–9 y disys17–20
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 8G
+        reservations:
+          cpus: "2.0"
+          memory: 4G
+
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-pub"
+        - "traefik.http.routers.axo-ui.rule=Host(`muyal.tamps.cinvestav.mx`) && PathPrefix(`/axo`)"
+        - "traefik.http.routers.axo-ui.entrypoints=websecure"
+        - "traefik.http.routers.axo-ui.tls=true"
+        - "traefik.http.routers.axo-ui.tls.certresolver=resolverx"
+        - "traefik.http.services.axo-ui.loadbalancer.server.port=9000"
+  axo-backend:
+    image: ${AXO_BACKEND_IMAGE:-nachocode/axo:backend-0.0.1a0}
+    container_name: axo-backend
+    # Use an .env file to manage environment variables for flexibility.
+    env_file:
+      - .env.prod
+    #ports:
+      # Maps the host port (from .env, defaults to 17000) to the container port.
+    #  - "${AXO_BACKEND_API_PORT:-17000}:${AXO_BACKEND_API_PORT:-17000}"
+    command: >
+      uvicorn axobackend.main:app
+      --host ${AXO_BACKEND_API_HOST:-0.0.0.0}
+      --port ${AXO_BACKEND_API_PORT:-17000}
+      --log-level debug
+
+    networks:
+      - axo-net
+      - traefik-pub
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - "node.labels.node_id == disys2"
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 8G
+        reservations:
+          cpus: "2.0"
+          memory: 4G
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.axo-backend.rule=Host(`apix.tamps.cinvestav.mx`) && PathPrefix(`/axobackend`)"
+        - "traefik.http.routers.axo-backend.entrypoints=websecure"
+        - "traefik.http.routers.axo-backend.tls=true"
+        - "traefik.http.routers.axo-backend.tls.certresolver=resolverx"
+        - "traefik.http.services.axo-backend.loadbalancer.server.port=17000"
+        - "traefik.http.routers.axo-backend.middlewares=strip-api-prefix-axo-backend"
+        - "traefik.http.middlewares.strip-api-prefix-axo-backend.stripprefix.prefixes=/axobackend"
+  cryptomesh:
+    image: ${CRYPTO_MESH_IMAGE:-nachocode/cryptomesh:api-0.0.1a0}
+    container_name: cryptomesh
+    depends_on:
+      - axo-db
+      # - crypto-mesh-broker
+    command: ["uvicorn", "cryptomesh.server:app", "--host", "0.0.0.0", "--port", "19000"]
+    #ports:
+    #  - "${CRYPTO_MESH_PORT:-19000}:19000"
+    env_file:
+      - .env.prod
+
+    # volumes:
+      # - cryptomesh-vol:/app
+    restart: unless-stopped
+    networks:
+      - axo-net
+      - traefik-pub
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - "node.labels.node_id == disys4"
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 8G
+        reservations:
+          cpus: "2.0"
+          memory: 4G
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.cryptomesh.rule=Host(`apix.tamps.cinvestav.mx`) && PathPrefix(`/cryptomesh`)"
+        - "traefik.http.routers.cryptomesh.entrypoints=websecure"
+        - "traefik.http.routers.cryptomesh.tls=true"
+        - "traefik.http.routers.cryptomesh.tls.certresolver=resolverx"
+        - "traefik.http.services.cryptomesh.loadbalancer.server.port=19000"
+        - "traefik.http.routers.cryptomesh.middlewares=strip-api-prefix-cryptomesh"
+        - "traefik.http.middlewares.strip-api-prefix-cryptomesh.stripprefix.prefixes=/cryptomesh"
+  axo-db:
+      image: ${AXO_DB_IMAGE:-mongodb/mongodb-community-server:4.4.10-ubuntu2004}
+      container_name: axo-db
+      # ports:
+        # - "${MONGO_PORT:-27020}:27017"
+      volumes:
+        - axo-db-data:/data/db
+        - /axo/mongod.conf:/etc/mongod.conf:ro
+      restart: unless-stopped
+      networks:
+        - axo-net
+      env_file:
+        - .env.prod
+      command: mongod --config /etc/mongod.conf
+      deploy:
+        replicas: 1
+        restart_policy:
+          condition: on-failure
+          delay: 5s
+          max_attempts: 3
+          window: 120s
+        placement:
+          constraints:
+            - "node.labels.node_id == disys3"
+        resources:
+          limits:
+            cpus: "4.0"
+            memory: 8G
+          reservations:
+            cpus: "2.0"
+            memory: 4G
+
+networks:
+  axo-net:
+    external: true
+  traefik-pub:
+    external: true
+
+volumes:
+  axo-db-data:
