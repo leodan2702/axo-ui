@@ -84,10 +84,13 @@ const menu = ref(false)
 const confirmDialog = ref(false)
 
 const items = [
-  { text: 'Settings',      icon: 'mdi-account-cog', route: '/edit-profile', action: 'default' },
-  { text: 'Restart Tour',  icon: 'mdi-restart',     route: '#',             action: 'restart-tour' },
-  { text: 'Logout',        icon: 'mdi-logout',      route: '/',             action: 'logout' }
+  { text: 'Settings',      icon: 'mdi-account-cog',          route: '/edit-profile', action: 'default' },
+  { text: 'FAQ', icon: 'mdi-frequently-asked-questions',     route: '/faq', action: 'default' },
+  { text: 'Help',          icon: 'mdi-help-circle-outline',  route: '/help',         action: 'default' },
+  { text: 'Restart Tour',  icon: 'mdi-restart',              route: '#',             action: 'restart-tour' },
+  { text: 'Logout',        icon: 'mdi-logout',               route: '/',             action: 'logout' }
 ]
+
 
 const handleItemClick = (item) => {
   switch (item.action) {
