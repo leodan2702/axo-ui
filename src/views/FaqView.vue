@@ -38,15 +38,15 @@
           clearable
         />
       </v-col>
-      <v-col cols="12" md="3" class="d-flex align-center">
-        <v-switch
+      <!-- <v-col cols="12" md="3" class="d-flex align-center"> -->
+        <!-- <v-switch
           v-model="expandFirst"
           inset
           color="primary"
           hide-details
           label="Expand first card"
-        />
-      </v-col>
+        /> -->
+      <!-- </v-col> -->
     </v-row>
 
     <!-- FAQ Cards Grid -->

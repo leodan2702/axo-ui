@@ -81,7 +81,7 @@ const props = defineProps({
 
   // App
   appName: { type: String, default: '' },
-  version: { type: String, default: '1.0.0' },
+  version: { type: String, default: '0.0.1a2' },
 
   // Contacto
   contactIntro: {
