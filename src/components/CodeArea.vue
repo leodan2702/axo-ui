@@ -18,10 +18,7 @@ import {ref} from "vue"
 import { useActiveObjectsStore } from '@/store/active_objects'
 
 const activeObjectsStore = useActiveObjectsStore()
-const code = ref(`from axo import Axo, axo_method
 
-# write your code here
-`)
 
 
 </script>

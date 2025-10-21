@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { fetchWithHandling } from "../utils/apiHelpers";
-import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION } from "@/config";
+import { fetchWithHandling } from "@/utils/apiHelpers";
+import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION,FETCH_CREDENTIALS } from "@/config";
 
 export const useSecurityPoliciesStore = defineStore('security_policies', () => {
     const policies = ref([]);
@@ -28,7 +28,7 @@ export const useSecurityPoliciesStore = defineStore('security_policies', () => {
     async function get_policies() {
         try {
             const data_json = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/security-policies/`,
-                {},
+                {credentials: FETCH_CREDENTIALS},
                 "Failed to fetch security policies"
             );
             policies.value = data_json;
@@ -48,7 +48,8 @@ export const useSecurityPoliciesStore = defineStore('security_policies', () => {
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(form.value)
+                    body: JSON.stringify(form.value),
+                    credentials: FETCH_CREDENTIALS
                 },
                 "Failed to create policy"
             );
@@ -72,7 +73,8 @@ export const useSecurityPoliciesStore = defineStore('security_policies', () => {
                 {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(form.value)
+                    body: JSON.stringify(form.value),
+                    credentials: FETCH_CREDENTIALS
                 },
                 "Failed to update policy"
             );
@@ -95,7 +97,7 @@ export const useSecurityPoliciesStore = defineStore('security_policies', () => {
     async function delete_policy(sp_id) {
         try {
             await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/security-policies/${sp_id}/`,
-                { method: 'DELETE' },
+                { method: 'DELETE', credentials: FETCH_CREDENTIALS },
                 "Failed to delete policy"
             );
 
@@ -112,7 +114,7 @@ export const useSecurityPoliciesStore = defineStore('security_policies', () => {
     async function get_policy_by_id(sp_id) {
         try {
             const data = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/security-policies/${sp_id}/`,
-                {},
+                { credentials: FETCH_CREDENTIALS },
                 "Failed to fetch security policy by id"
             );
             return { color: "success", data };

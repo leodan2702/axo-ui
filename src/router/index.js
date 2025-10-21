@@ -20,7 +20,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import DesignGraph from '@/views/DesignGraph.vue'
 import CreateService from '@/views/CreateService.vue'
 import CreateMicroservice from '@/views/CreateMicroservice.vue'
-
+import {BASE_PATH} from "@/config"
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -59,8 +59,9 @@ const routes = [
 ]
 
 
+
 const router = createRouter({
-  history: createWebHistory('/axo/'),
+  history: createWebHistory(BASE_PATH),
   routes
 })
 

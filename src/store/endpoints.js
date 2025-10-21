@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { fetchWithHandling } from "../utils/apiHelpers";
-import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION } from "@/config";
+import { fetchWithHandling } from "@/utils/apiHelpers";
+import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION,FETCH_CREDENTIALS } from "@/config";
 
 export const useEndpointsStore = defineStore('endpoints', () => {
   const endpoints = ref([]);
@@ -29,7 +29,7 @@ export const useEndpointsStore = defineStore('endpoints', () => {
   async function get_endpoints() {
     try {
       const data_json = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/`,
-        {},
+        {crendentials: FETCH_CREDENTIALS},
         "Failed to fetch endpoints"
       );
       endpoints.value = data_json;
@@ -49,7 +49,8 @@ export const useEndpointsStore = defineStore('endpoints', () => {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form.value)
+          body: JSON.stringify(form.value),
+          credentials: FETCH_CREDENTIALS
         },
         "Failed to create endpoint"
       );
@@ -74,7 +75,8 @@ export const useEndpointsStore = defineStore('endpoints', () => {
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form.value)
+          body: JSON.stringify(form.value),
+          credentials: FETCH_CREDENTIALS
         },
         "Failed to update endpoint"
       );
@@ -97,7 +99,7 @@ export const useEndpointsStore = defineStore('endpoints', () => {
   async function delete_endpoint(endpoint_id) {
     try {
       await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/${endpoint_id}/`,
-        { method: 'DELETE' },
+        { method: 'DELETE', credentials: FETCH_CREDENTIALS },
         "Failed to delete endpoint"
       );
 
@@ -120,7 +122,8 @@ export const useEndpointsStore = defineStore('endpoints', () => {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form.value)
+          body: JSON.stringify(form.value),
+          credentials: FETCH_CREDENTIALS
         },
         "Failed to deploy endpoint"
       );
@@ -146,7 +149,7 @@ export const useEndpointsStore = defineStore('endpoints', () => {
     loading.value = true;
     try {
       await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/endpoints/detach/${endpoint_id}`,
-        { method: 'DELETE' },
+        { method: 'DELETE', credentials: FETCH_CREDENTIALS },
         "Failed to detach endpoint"
       );
 

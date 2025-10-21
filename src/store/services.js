@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { fetchWithHandling } from "../utils/apiHelpers"; 
+import { fetchWithHandling } from "@/utils/apiHelpers"; 
 import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION } from "@/config";
 
 

@@ -1,8 +1,7 @@
 import { defineStore } from "pinia"
 import { ref } from "vue"
 import yaml from "js-yaml"
-import { SHIELDX_URL, API_VERSION } from "@/config"
-import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION } from "@/config"
+import { SHIELDX_URL, API_VERSION,CRYPTOMESH_URL, CRYPTOMESH_API_VERSION,FETCH_CREDENTIALS } from "@/config"
 
 
 export const useChoreographyStore = defineStore("choreography", () => {
@@ -14,6 +13,7 @@ export const useChoreographyStore = defineStore("choreography", () => {
       const response = await fetch(`${SHIELDX_URL}/api/${API_VERSION}/interpret`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: FETCH_CREDENTIALS,
         body: JSON.stringify(choreographyJson),
       })
 
@@ -39,6 +39,7 @@ export const useChoreographyStore = defineStore("choreography", () => {
       const response = await fetch(`${SHIELDX_URL}/api/${API_VERSION}/interpret/yaml`, {
         method: "POST",
         headers: { "Content-Type": "application/x-yaml" },
+        credentials: FETCH_CREDENTIALS,
         body: yamlContent,
       })
 
@@ -60,6 +61,7 @@ export const useChoreographyStore = defineStore("choreography", () => {
       const response = await fetch(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/choreography/run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: FETCH_CREDENTIALS,
         body: JSON.stringify(graphJson),
       })
 

@@ -117,6 +117,7 @@
 
 <script setup>
 import { reactive, watch,computed  } from "vue"
+import {MICTLANX_BASE_URL} from "@/config"
 
 const props = defineProps({
   bucket: { type: Object, required: true }, // el nodo bucket seleccionado
@@ -146,7 +147,8 @@ const openSinkMetadata = () => {
   const raw = String(form.sink_bucket_id || "").trim()
   if (!raw) return
   const bucketId = encodeURIComponent(raw)
-  const url = `https://apix.tamps.cinvestav.mx/mictlanxx/api/v4/buckets/${bucketId}/metadata`
+  const url = `${MICTLANX_BASE_URL}/api/v4/buckets/${bucketId}/metadata`
+  // const url = `https://apix.tamps.cinvestav.mx/mictlanxx/api/v4/buckets/${bucketId}/metadata`
   // Abrir en nueva pestaña de manera segura
   window.open(url, "_blank", "noopener")
 }

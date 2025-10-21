@@ -1,4 +1,5 @@
 // utils/apiHelpers.js
+import { FETCH_CREDENTIALS } from "@/config";
 
 export async function safeJson(response) {
   try {
@@ -29,7 +30,7 @@ export function buildErrorMessage(data, fallback = "An error occurred") {
 }
 
 export async function fetchWithHandling(url, options = {}, fallbackError = "Request failed") {
-  const response = await fetch(url, options);
+  const response = await fetch(url, {...options });
   const data = await safeJson(response);
 
   if (!response.ok) {

@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { fetchWithHandling } from "../utils/apiHelpers";
-import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION } from "@/config";
+import { fetchWithHandling } from "@/utils/apiHelpers";
+import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION,FETCH_CREDENTIALS } from "@/config";
 
 export const useActiveObjectsStore = defineStore('activeObjects', () => {
   const activeObjects = ref([]);
@@ -17,9 +17,13 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
     axo_dependencies: [], // Aquí almacenaremos un array limpio
     axo_uri: '',
     axo_alias: '',
-    axo_code: `from axo import Axo, axo_method
-
+    axo_code: `from axo import Axo, axo_task, AxoContext
 # write your code here
+class MyAO1(Axo):
+    @axo_task()
+    def task1(self, source: memoryview, ctx: AxoContext):
+        print("Hello, Axo!")
+        return source.tobytes()
 `
   });
 
@@ -36,9 +40,14 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
       axo_dependencies: [],
       axo_uri: '',
       axo_alias: '',
-      axo_code: `from axo import Axo, axo_method
+      axo_code: `from axo import Axo, axo_task, AxoContext
 
 # write your code here
+class MyAO1(Axo):
+    @axo_task()
+    def task1(self, source: memoryview, ctx: AxoContext):
+        print("Hello, Axo!")
+        return source.tobytes()
 `
     };
   }
@@ -47,7 +56,9 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
   async function getActiveObjects() {
     try {
       const data_json = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/active-objects/`,
-        {},
+        {
+          "credentials": FETCH_CREDENTIALS
+        },
         "Failed to fetch ActiveObjects"
       );
       activeObjects.value = data_json;
@@ -69,7 +80,8 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form.value)
+          body: JSON.stringify(form.value),
+          credentials: FETCH_CREDENTIALS
         },
         "Failed to create ActiveObject"
       );
@@ -94,7 +106,8 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form.value)
+          body: JSON.stringify(form.value),
+          credentials: FETCH_CREDENTIALS
         },
         "Failed to update ActiveObject"
       );
@@ -116,7 +129,7 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
   async function deleteActiveObject(active_object_id) {
     try {
       await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/active-objects/${active_object_id}/`,
-        { method: 'DELETE' },
+        { method: 'DELETE', credentials: FETCH_CREDENTIALS },
         "Failed to delete ActiveObject"
       );
 
@@ -132,7 +145,9 @@ export const useActiveObjectsStore = defineStore('activeObjects', () => {
   async function getActiveObjectSchema(active_object_id) {
     try {
       const schema = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/active-objects/${active_object_id}/schema`,
-        {},
+        {
+          credentials: FETCH_CREDENTIALS
+        },
         "Failed to fetch ActiveObject schema"
       );
       return { color: "success", data: schema };

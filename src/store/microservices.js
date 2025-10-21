@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useServicesStore } from "./services";
-import { fetchWithHandling } from "../utils/apiHelpers";
-import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION } from "@/config";
+import { fetchWithHandling } from "@/utils/apiHelpers";
+import { CRYPTOMESH_URL, CRYPTOMESH_API_VERSION,FETCH_CREDENTIALS } from "@/config";
 
 export const useMicroservicesStore = defineStore("microservices", () => {
   const microservices = ref([]);
@@ -29,7 +29,7 @@ export const useMicroservicesStore = defineStore("microservices", () => {
   async function get_microservices() {
     try {
       const data_json = await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/microservices/`,
-        {},
+        {credentials: FETCH_CREDENTIALS},
         "Failed to fetch microservices"
       );
       microservices.value = data_json;
@@ -49,7 +49,8 @@ export const useMicroservicesStore = defineStore("microservices", () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form.value)
+          body: JSON.stringify(form.value),
+          credentials: FETCH_CREDENTIALS
         },
         "Failed to create microservice"
       );
@@ -138,7 +139,7 @@ export const useMicroservicesStore = defineStore("microservices", () => {
   async function delete_microservice(microservice_id) {
     try {
       await fetchWithHandling(`${CRYPTOMESH_URL}/api/${CRYPTOMESH_API_VERSION}/microservices/${microservice_id}/`,
-        { method: "DELETE" },
+        { method: "DELETE", credentials: FETCH_CREDENTIALS },
         "Failed to delete microservice"
       );
 

@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { AXO_BACKEND_URL } from "@/config";
+import { AXO_BACKEND_URL,FETCH_CREDENTIALS } from "@/config";
 
 export const useUserStore = defineStore('users',() => {
     const user = ref({})
@@ -23,6 +23,7 @@ export const useUserStore = defineStore('users',() => {
             console.log("BODY", body)
             const response = await fetch (`${AXO_BACKEND_URL}/auth`, {
                 method: 'POST',
+                credentials: FETCH_CREDENTIALS,
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -86,7 +87,7 @@ export const useUserStore = defineStore('users',() => {
             console.log("BODY",body)
             const response = await fetch(`${AXO_BACKEND_URL}/auth/signup`, {
                 method: 'POST',
-                credentials: "include",
+                credentials: FETCH_CREDENTIALS,
                 headers: {
                     'Content-Type': 'application/json',
                 },
